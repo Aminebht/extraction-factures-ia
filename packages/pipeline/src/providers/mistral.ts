@@ -1,15 +1,19 @@
 import { Mistral } from "@mistralai/mistralai";
 import { runOcr } from "../ocr.ts";
-import type { AiProvider } from "./types.ts";
+import type { LlmProvider, OcrProvider } from "./types.ts";
 
-export function mistralProvider(apiKey: string, llmModel: string): AiProvider {
+export function mistralOcr(apiKey: string): OcrProvider {
+  const client = new Mistral({ apiKey });
+  return { name: "mistral-ocr", ocr: (pdf) => runOcr(client, pdf) };
+}
+
+export function mistralLlm(apiKey: string, model: string): LlmProvider {
   const client = new Mistral({ apiKey });
   return {
-    name: `mistral (${llmModel})`,
-    ocr: (pdf) => runOcr(client, pdf),
+    name: `mistral (${model})`,
     async complete(messages, schema) {
       const response = await client.chat.complete({
-        model: llmModel,
+        model,
         temperature: 0,
         messages,
         responseFormat: {

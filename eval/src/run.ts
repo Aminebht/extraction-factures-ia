@@ -7,7 +7,7 @@
  *
  * Écrit aussi eval/report.md.
  */
-import { readFile, writeFile } from "node:fs/promises";
+import { readdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { BatchResult } from "@juwa/schema";
 import { config } from "@juwa/pipeline/config.ts";
@@ -27,9 +27,12 @@ async function loadBatch(): Promise<BatchResult | null> {
   }
 }
 
+/** Texte OCR en cache pour ce PDF (le nom du fichier de cache commence par son sha256). */
 async function loadOcr(sha256: string): Promise<string | null> {
   try {
-    const ocr = JSON.parse(await readFile(path.join(config.ocrCacheDir, `${sha256}.json`), "utf8")) as OcrResult;
+    const file = (await readdir(config.ocrCacheDir)).find((f) => f.startsWith(`${sha256}.`));
+    if (!file) return null;
+    const ocr = JSON.parse(await readFile(path.join(config.ocrCacheDir, file), "utf8")) as OcrResult;
     return ocr.pages.map((p) => p.markdown).join("\n");
   } catch {
     return null;

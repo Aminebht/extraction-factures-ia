@@ -13,11 +13,12 @@ import { PipelineError, toPipelineError } from "./errors.ts";
 import { certifyInvoice } from "./grounding.ts";
 import { extractWithLlm } from "./llm.ts";
 import type { OcrResult } from "./ocr.ts";
-import type { AiProvider } from "./providers/index.ts";
+import type { LlmProvider, OcrProvider } from "./providers/index.ts";
 import { DEFAULT_RETRY, withRetry, type RetryOptions } from "./retry.ts";
 
 export interface PipelineDeps {
-  provider: AiProvider;
+  ocr: OcrProvider;
+  llm: LlmProvider;
   cache: OcrCache;
   ocrConfidenceThreshold: number;
   retry?: RetryOptions;
@@ -27,14 +28,18 @@ function failed(source: Source, error: PipelineError): InvoiceResult {
   return { status: "failed", source, error: { kind: error.kind, message: error.message } };
 }
 
+/** Clé de cache : contenu du PDF + fournisseur OCR (changer d'OCR ne réutilise pas l'ancienne lecture). */
+export const ocrCacheKey = (sha256: string, ocrName: string) => `${sha256}.${ocrName.replace(/[^a-z0-9.-]+/gi, "_")}`;
+
 async function ocrWithCache(pdf: Buffer, hash: string, fileName: string, deps: PipelineDeps): Promise<OcrResult> {
-  const cached = await deps.cache.get(hash);
+  const key = ocrCacheKey(hash, deps.ocr.name);
+  const cached = await deps.cache.get(key);
   if (cached) return cached;
-  const result = await withRetry(() => deps.provider.ocr(pdf, fileName), deps.retry ?? DEFAULT_RETRY);
+  const result = await withRetry(() => deps.ocr.ocr(pdf, fileName), deps.retry ?? DEFAULT_RETRY);
   if (!result.pages.some((p) => p.markdown.trim())) {
     throw new PipelineError("OCR", "Aucun texte n'a pu être lu sur ce document.");
   }
-  await deps.cache.set(hash, result);
+  await deps.cache.set(key, result);
   return result;
 }
 
@@ -60,7 +65,7 @@ export async function processInvoice(filePath: string, deps: PipelineDeps): Prom
   }
 
   try {
-    const llmInvoice = await extractWithLlm(deps.provider, ocr, deps.retry);
+    const llmInvoice = await extractWithLlm(deps.llm, ocr, deps.retry);
     const { invoice, warnings } = certifyInvoice(llmInvoice, ocr, deps.ocrConfidenceThreshold);
     return { status: "extracted", source, invoice, warnings: [...warnings, ...runBusinessChecks(invoice)] };
   } catch (error) {

@@ -11,12 +11,12 @@ import type { OcrResult } from "./ocr.ts";
 export const sha256 = (content: Buffer) => createHash("sha256").update(content).digest("hex");
 
 export interface OcrCache {
-  get(hash: string): Promise<OcrResult | null>;
-  set(hash: string, result: OcrResult): Promise<void>;
+  get(key: string): Promise<OcrResult | null>;
+  set(key: string, result: OcrResult): Promise<void>;
 }
 
 export function diskOcrCache(dir: string): OcrCache {
-  const file = (hash: string) => path.join(dir, `${hash}.json`);
+  const file = (key: string) => path.join(dir, `${key}.json`);
   return {
     async get(hash) {
       try {

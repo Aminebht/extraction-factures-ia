@@ -36,7 +36,7 @@ Pour traiter une autre facture : la déposer dans `factures/` et relancer `npm r
 | `CONCURRENCY` | `2` | Factures traitées en parallèle (le tier gratuit a une limite de débit basse) |
 | `OCR_CONFIDENCE_THRESHOLD` | `0.8` | En dessous, une valeur prouvée passe « à vérifier » |
 | `INVOICES_DIR`, `OUTPUT_PATH` | `factures`, `output/results.json` | Entrée et sortie |
-| `AI_PROVIDER` | `mistral` | `cloudflare` possible pour le développement (voir limites) |
+| `OCR_PROVIDER`, `LLM_PROVIDER` | `mistral`, `mistral` | Fournisseurs choisis séparément ; `gemini` (OCR) et `cloudflare` (OCR, LLM) servent au développement, voir limites |
 
 ## Architecture
 
@@ -94,7 +94,10 @@ factures/     Les 4 factures du sujet
 - **Une mauvaise lecture OCR reproduite par le LLM** passe l'ancrage ; elle n'est repérée que si elle casse l'arithmétique.
 - **TVA à plusieurs taux** non représentée : un seul `tauxTVA`, mis à `null` si plusieurs taux figurent.
 - **Désignations** comparées avec une tolérance (80 % des mots) ; dates à année sur 2 chiffres interprétées en 20XX ; euros uniquement.
-- **Fournisseur Cloudflare** (`AI_PROVIDER=cloudflare`, pour le développement uniquement : le sujet impose Mistral) : son `toMarkdown` lit la couche texte du PDF au lieu d'un OCR, donc pas de score de confiance, mojibake sur HydroFluid et aucun texte sur le scan.
+- **Fournisseurs de développement** (le sujet impose l'API Mistral ; l'OCR et le LLM se choisissent séparément) :
+  - `OCR_PROVIDER=gemini` lit le PDF par vision (images des pages seules, `contentLayers: ["PAGE_IMAGE"]`), mais ne donne pas de confiance par mot : aucun champ ne passe « à vérifier ». Les données du tier gratuit peuvent servir à entraîner les modèles de Google.
+  - `OCR_PROVIDER=cloudflare` (`toMarkdown`) lit la couche texte du PDF au lieu du rendu : mojibake sur HydroFluid, aucun texte sur le scan.
+  - `LLM_PROVIDER=cloudflare` utilise Mistral Small 3.1 hébergé par Cloudflare.
 - Pas de surlignage de la valeur dans le PDF (les coordonnées des blocs OCR le permettraient).
 
 ## Passer de 4 à 4 000 factures par mois

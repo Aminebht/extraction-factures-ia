@@ -1,5 +1,5 @@
 /**
- * Sonde : passe un PDF dans l'OCR du fournisseur configuré (AI_PROVIDER) et affiche ce qui revient,
+ * Sonde : passe un PDF dans l'OCR du fournisseur configuré (OCR_PROVIDER) et affiche ce qui revient,
  * pour vérifier sur l'API réelle les hypothèses du pipeline (texte caché de F4, confiance par mot).
  *
  *   npm run probe-ocr -w @juwa/pipeline -- factures/facture_4_hydrofluid_encodage.pdf
@@ -7,9 +7,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { ROOT_DIR } from "../src/config.ts";
-import { createProvider } from "../src/providers/index.ts";
+import { createOcrProvider } from "../src/providers/index.ts";
 
-const MOJIBAKE = /Ã[\u0080-¿]|Â[ -¿]|â[\u0080-€]|�/g;
+const MOJIBAKE = /\u00C3[\u0080-\u00BF]|\u00C2[\u00A0-\u00BF]|\u00E2[\u0080-\u20AC]|\uFFFD/g;
 
 const file = process.argv[2];
 if (!file) {
@@ -17,7 +17,7 @@ if (!file) {
   process.exit(1);
 }
 
-const provider = createProvider();
+const provider = createOcrProvider();
 const result = await provider.ocr(readFileSync(path.resolve(ROOT_DIR, file)), path.basename(file));
 
 const outDir = path.join(ROOT_DIR, ".cache", "probe");

@@ -6,7 +6,9 @@ import { noOcrCache } from "./cache.ts";
 import { HttpError } from "./errors.ts";
 import type { OcrResult } from "./ocr.ts";
 import { processBatch, processInvoice, type PipelineDeps } from "./pipeline.ts";
-import type { AiProvider } from "./providers/index.ts";
+import type { LlmProvider, OcrProvider } from "./providers/index.ts";
+
+type FakeProvider = OcrProvider & LlmProvider;
 
 const OCR_TEXT = "FACTURE N° A-1 du 12/06/2026\nACME SAS\n| Vis | 2 | 5,00 € | 10,00 € |\nTotal HT 10,00 €\nTVA 20 % 2,00 €\nTotal TTC 12,00 €";
 
@@ -34,7 +36,7 @@ const ocrResult = (markdown: string): OcrResult => ({
 });
 
 /** Fournisseur factice : le comportement du LLM dépend du fichier, repéré par son contenu OCR. */
-function fakeProvider(complete: (markdown: string) => Promise<string>): AiProvider {
+function fakeProvider(complete: (markdown: string) => Promise<string>): FakeProvider {
   return {
     name: "fake",
     ocr: async (pdf) => ocrResult(`${OCR_TEXT}\n${pdf.toString("latin1")}`),
@@ -42,8 +44,9 @@ function fakeProvider(complete: (markdown: string) => Promise<string>): AiProvid
   };
 }
 
-const deps = (provider: AiProvider): PipelineDeps => ({
-  provider,
+const deps = (provider: FakeProvider): PipelineDeps => ({
+  ocr: provider,
+  llm: provider,
   cache: noOcrCache,
   ocrConfidenceThreshold: 0.8,
   retry: { attempts: 3, baseDelayMs: 0, sleep: async () => {} },
@@ -119,7 +122,7 @@ describe("processInvoice : gestion des erreurs", () => {
     const [file] = writePdfs(["a.pdf"]);
     const answers = ['{"fournisseur": "pas le bon format"}', LLM_ANSWER];
     const prompts: string[] = [];
-    const provider: AiProvider = {
+    const provider: FakeProvider = {
       name: "fake",
       ocr: async () => ocrResult(OCR_TEXT),
       complete: async (messages) => {

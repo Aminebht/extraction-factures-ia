@@ -2,11 +2,21 @@
  * Cloudflare Workers AI, via l'API REST.
  * - OCR : toMarkdown. Attention : pour un PDF, il lit la couche texte du fichier (pas de vrai OCR),
  *   donc pas de score de confiance, et un scan sans couche texte ne donne rien.
- * - LLM : /ai/run/{modèle} en mode JSON (response_format json_schema).
+ * - LLM : /ai/run/{modèle} avec sortie JSON contrainte. Selon le modèle, le schéma passe par
+ *   `guided_json` (ex. @cf/mistralai/mistral-small-3.1-24b-instruct) ou `response_format`.
  */
 import { HttpError } from "../errors.ts";
 import type { OcrResult } from "../ocr.ts";
-import type { AiProvider } from "./types.ts";
+import type { LlmProvider, OcrProvider } from "./types.ts";
+
+/** Modèles Workers AI qui prennent le schéma JSON via `guided_json` plutôt que `response_format`. */
+const GUIDED_JSON_MODELS = [/^@cf\/mistralai\/mistral-small/];
+
+export function jsonConstraint(model: string, schema: Record<string, unknown>): Record<string, unknown> {
+  return GUIDED_JSON_MODELS.some((re) => re.test(model))
+    ? { guided_json: schema }
+    : { response_format: { type: "json_schema", json_schema: schema } };
+}
 
 interface CloudflareEnvelope<T> {
   success: boolean;
@@ -14,27 +24,30 @@ interface CloudflareEnvelope<T> {
   errors?: { message: string }[];
 }
 
-export function cloudflareProvider(accountId: string, apiToken: string, llmModel: string): AiProvider {
+function cloudflareClient(accountId: string, apiToken: string) {
   const base = `https://api.cloudflare.com/client/v4/accounts/${accountId}/ai`;
-  const headers = { Authorization: `Bearer ${apiToken}` };
-
-  async function call<T>(url: string, init: RequestInit): Promise<T> {
-    const response = await fetch(url, { ...init, headers: { ...headers, ...init.headers } });
+  return async function call<T>(path: string, init: RequestInit): Promise<T> {
+    const response = await fetch(`${base}${path}`, {
+      ...init,
+      headers: { Authorization: `Bearer ${apiToken}`, ...init.headers },
+    });
     if (!response.ok) {
       throw new HttpError(response.status, response.headers, `Cloudflare ${response.status} : ${await response.text()}`);
     }
     const body = (await response.json()) as CloudflareEnvelope<T>;
     if (!body.success) throw new Error(`Cloudflare : ${body.errors?.map((e) => e.message).join(", ")}`);
     return body.result;
-  }
+  };
+}
 
+export function cloudflareOcr(accountId: string, apiToken: string): OcrProvider {
+  const call = cloudflareClient(accountId, apiToken);
   return {
-    name: `cloudflare (${llmModel})`,
-
+    name: "cloudflare-tomarkdown",
     async ocr(pdf, fileName): Promise<OcrResult> {
       const form = new FormData();
       form.append("files", new Blob([new Uint8Array(pdf)], { type: "application/pdf" }), fileName);
-      const [doc] = await call<{ format: string; data?: string; error?: string }[]>(`${base}/tomarkdown`, {
+      const [doc] = await call<{ format: string; data?: string; error?: string }[]>("/tomarkdown", {
         method: "POST",
         body: form,
       });
@@ -46,19 +59,25 @@ export function cloudflareProvider(accountId: string, apiToken: string, llmModel
         pages: [{ index: 0, markdown: doc.data, words: [], averageConfidence: null, minimumConfidence: null }],
       };
     },
+  };
+}
 
+export function cloudflareLlm(accountId: string, apiToken: string, model: string): LlmProvider {
+  const call = cloudflareClient(accountId, apiToken);
+  return {
+    name: `cloudflare (${model})`,
     async complete(messages, schema) {
-      const result = await call<{ response: unknown }>(`${base}/run/${llmModel}`, {
+      const result = await call<{ response: unknown }>(`/run/${model}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           messages,
           temperature: 0,
-          max_tokens: 4096,
-          response_format: { type: "json_schema", json_schema: schema },
+          max_tokens: 4096, // défaut Workers AI : 256, trop court pour une facture complète
+          ...jsonConstraint(model, schema),
         }),
       });
-      // En mode JSON, la réponse est un objet ; on la remet en texte pour la validation commune.
+      // En mode JSON, la réponse peut être un objet : on la remet en texte pour la validation commune.
       return typeof result.response === "string" ? result.response : JSON.stringify(result.response);
     },
   };

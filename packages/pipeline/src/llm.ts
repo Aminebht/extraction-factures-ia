@@ -6,7 +6,7 @@ import { LlmInvoice } from "@juwa/schema";
 import { z } from "zod";
 import { PipelineError } from "./errors.ts";
 import type { OcrResult } from "./ocr.ts";
-import type { AiProvider, ChatMessage } from "./providers/index.ts";
+import type { ChatMessage, LlmProvider } from "./providers/index.ts";
 import { DEFAULT_RETRY, withRetry, type RetryOptions } from "./retry.ts";
 
 export const SYSTEM_PROMPT = `Tu extrais les données d'une facture fournisseur pour un service comptable.
@@ -63,7 +63,7 @@ export function parseLlmResponse(raw: string): { ok: true; invoice: LlmInvoice }
  * on répare la forme, jamais le fond (on ne relance pas pour un champ null).
  */
 export async function extractWithLlm(
-  provider: AiProvider,
+  provider: LlmProvider,
   ocr: OcrResult,
   retry: RetryOptions = DEFAULT_RETRY,
 ): Promise<LlmInvoice> {

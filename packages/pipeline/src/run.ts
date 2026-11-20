@@ -10,7 +10,7 @@ import { BatchResult, type InvoiceResult } from "@juwa/schema";
 import { diskOcrCache, noOcrCache } from "./cache.ts";
 import { ROOT_DIR, config } from "./config.ts";
 import { processBatch } from "./pipeline.ts";
-import { createProvider } from "./providers/index.ts";
+import { createLlmProvider, createOcrProvider } from "./providers/index.ts";
 
 function summarize(result: InvoiceResult): string {
   if (result.status === "failed") return `✗ ${result.source.fichier} : ÉCHEC (${result.error.kind}) ${result.error.message}`;
@@ -21,7 +21,8 @@ function summarize(result: InvoiceResult): string {
 }
 
 async function main() {
-  const provider = createProvider();
+  const ocr = createOcrProvider();
+  const llm = createLlmProvider();
   const useCache = !process.argv.includes("--no-cache");
   const files = (await readdir(config.invoicesDir))
     .filter((f) => f.toLowerCase().endsWith(".pdf"))
@@ -32,12 +33,15 @@ async function main() {
     console.error(`Aucun PDF trouvé dans ${path.relative(ROOT_DIR, config.invoicesDir)}.`);
     process.exit(1);
   }
-  console.log(`${files.length} facture(s), fournisseur ${provider.name}, concurrence ${config.concurrency}${useCache ? "" : ", sans cache"}\n`);
+  console.log(
+    `${files.length} facture(s) · OCR ${ocr.name} · LLM ${llm.name} · concurrence ${config.concurrency}${useCache ? "" : " · sans cache"}\n`,
+  );
 
   const batch = await processBatch(
     files,
     {
-      provider,
+      ocr,
+      llm,
       cache: useCache ? diskOcrCache(config.ocrCacheDir) : noOcrCache,
       ocrConfidenceThreshold: config.ocrConfidenceThreshold,
     },
