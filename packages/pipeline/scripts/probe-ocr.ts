@@ -1,14 +1,13 @@
 /**
- * Sonde : passe un PDF dans Mistral OCR et affiche ce qui revient, pour vérifier sur l'API réelle
- * les hypothèses du pipeline (texte caché de F4, scores de confiance par mot).
+ * Sonde : passe un PDF dans l'OCR du fournisseur configuré (AI_PROVIDER) et affiche ce qui revient,
+ * pour vérifier sur l'API réelle les hypothèses du pipeline (texte caché de F4, confiance par mot).
  *
  *   npm run probe-ocr -w @juwa/pipeline -- factures/facture_4_hydrofluid_encodage.pdf
  */
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
-import { Mistral } from "@mistralai/mistralai";
-import { ROOT_DIR, requireApiKey } from "../src/config.ts";
-import { runOcr } from "../src/ocr.ts";
+import { ROOT_DIR } from "../src/config.ts";
+import { createProvider } from "../src/providers/index.ts";
 
 const MOJIBAKE = /Ã[\u0080-¿]|Â[ -¿]|â[\u0080-€]|�/g;
 
@@ -18,14 +17,15 @@ if (!file) {
   process.exit(1);
 }
 
-const client = new Mistral({ apiKey: requireApiKey() });
-const result = await runOcr(client, readFileSync(path.resolve(ROOT_DIR, file)));
+const provider = createProvider();
+const result = await provider.ocr(readFileSync(path.resolve(ROOT_DIR, file)), path.basename(file));
 
 const outDir = path.join(ROOT_DIR, ".cache", "probe");
 mkdirSync(outDir, { recursive: true });
-const outFile = path.join(outDir, `${path.basename(file, ".pdf")}.json`);
+const outFile = path.join(outDir, `${path.basename(file, ".pdf")}.${provider.name.split(" ")[0]}.json`);
 writeFileSync(outFile, JSON.stringify(result, null, 2));
 
+console.log(`Fournisseur : ${provider.name}`);
 for (const page of result.pages) {
   const mojibake = page.markdown.match(MOJIBAKE) ?? [];
   const lowWords = page.words.filter((w) => w.confidence < 0.8);

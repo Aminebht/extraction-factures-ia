@@ -10,7 +10,9 @@
     "probe-ocr": "tsx scripts/probe-ocr.ts"
   },
   "dependencies": {
+    "@juwa/schema": "*",
     "@mistralai/mistralai": "^3.5.0",
-    "@juwa/schema": "*"
+    "p-limit": "^7.3.3",
+    "zod": "^4.6.7"
   }
 }
