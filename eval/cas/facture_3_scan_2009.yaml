@@ -1,0 +1,26 @@
+fichier: facture_3_scan_2009.pdf
+description: >-
+  Scan dégradé de 2009. Annotation manuscrite (« payé par chèque n° 0064… ») sur le mot FACTURE et le
+  nom du client ; le numéro 09-1187 reste lisible. Tampon « COMPTABILISÉ ». TVA à 19,6 %.
+
+attendu:
+  fournisseur: [SARL ROULEMENTS & TRANSMISSIONS, ROULEMENTS & TRANSMISSIONS]
+  numero: "09-1187"
+  date: "2009-09-17"
+  lignes:
+    - { designation: Roulement a billes SKF 6208-2RS, quantite: 8, prixUnitaire: 14.60, totalLigne: 116.80 }
+    - { designation: Courroie trapezoidale SPZ 1250, quantite: 6, prixUnitaire: 9.85, totalLigne: 59.10 }
+    - { designation: Graisse lithium EP2 - cartouche 400g, quantite: 24, prixUnitaire: 4.20, totalLigne: 100.80 }
+    - { designation: Joint spi 45x62x8 nitrile, quantite: 15, prixUnitaire: 2.95, totalLigne: 44.25 }
+    - { designation: Port et emballage, quantite: 1, prixUnitaire: 18.00, totalLigne: 18.00 }
+  totalHT: 338.95
+  tauxTVA: 19.6
+  montantTVA: 66.43
+  totalTTC: 405.38
+
+interdits:
+  tauxTVA: [20]                         # taux actuel codé en dur
+  date: ["2009-09-10"]                  # date de la commande téléphonique
+  numero: ["0064"]                      # numéro du chèque manuscrit
+
+avertissements_attendus: []

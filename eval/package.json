@@ -1,0 +1,18 @@
+{
+  "name": "@juwa/eval",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Évaluation du pipeline : vérité terrain, métriques et test du filet de sécurité",
+  "scripts": {
+    "eval": "tsx src/run.ts",
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@juwa/pipeline": "*",
+    "@juwa/schema": "*",
+    "yaml": "^2.9.1",
+    "zod": "^4.6.7"
+  }
+}

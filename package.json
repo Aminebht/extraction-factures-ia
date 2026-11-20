@@ -4,14 +4,16 @@
   "type": "module",
   "description": "Pipeline d'extraction de factures fournisseurs (Mistral OCR + LLM) et interface de vérification",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "eval"
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "pipeline": "npm run pipeline -w @juwa/pipeline --",
     "dev": "npm run dev -w @juwa/web",
-    "start": "npm run pipeline && npm run dev"
+    "start": "npm run pipeline && npm run dev",
+    "eval": "npm run eval -w @juwa/eval"
   },
   "engines": {
     "node": ">=20"

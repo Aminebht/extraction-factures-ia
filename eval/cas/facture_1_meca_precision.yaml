@@ -1,0 +1,33 @@
+# Vérité terrain, relevée à la main sur le PDF.
+#
+# Format (commun à tous les cas) :
+#   fichier                  PDF du dossier factures/
+#   attendu                  valeurs attendues ; montants en euros ; null = le pipeline doit s'abstenir ;
+#                            pour un texte, une liste = plusieurs réponses acceptées
+#   interdits                valeurs fausses plausibles qu'on ne doit jamais renvoyer (faux amis)
+#   avertissements_attendus  codes que le pipeline doit lever (écarts réels du document)
+
+fichier: facture_1_meca_precision.pdf
+description: PDF natif propre ; désignations sur deux lignes (titre + sous-ligne).
+
+attendu:
+  fournisseur: ATELIER MÉCA-PRÉCISION
+  numero: FAC-2026-0342
+  date: "2026-06-12"
+  lignes:
+    - { designation: Vérin hydraulique double effet VDE-80/45, quantite: 4, prixUnitaire: 486.00, totalLigne: 1944.00 }
+    - { designation: Kit joints d'étanchéité réf. KJ-2214, quantite: 12, prixUnitaire: 38.50, totalLigne: 462.00 }
+    - { designation: Usinage flasque acier S355 sur plan n° 6612-B, quantite: 6, prixUnitaire: 152.00, totalLigne: 912.00 }
+    - { designation: Contrôle dimensionnel tridimensionnel, quantite: 1, prixUnitaire: 290.00, totalLigne: 290.00 }
+    - { designation: Forfait emballage et transport, quantite: 1, prixUnitaire: 145.00, totalLigne: 145.00 }
+  totalHT: 3753.00
+  tauxTVA: 20
+  montantTVA: 750.60
+  totalTTC: 4503.60
+
+interdits:
+  fournisseur: [GARNIER Industrie]      # le client, pas le fournisseur
+  numero: [BC-GARNIER-2026-118]         # référence de commande
+  date: ["2026-07-12"]                  # échéance
+
+avertissements_attendus: []

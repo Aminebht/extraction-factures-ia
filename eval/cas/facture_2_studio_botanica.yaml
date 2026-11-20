@@ -1,0 +1,26 @@
+fichier: facture_2_studio_botanica.pdf
+description: >-
+  Deux anomalies réelles du document : ligne 2 à 4 × 95 € = 285 € (au lieu de 380 €) et somme des
+  lignes 925 € pour un total HT annoncé de 1 040 €. Le pipeline doit transcrire 1 040 € et signaler,
+  jamais « corriger ». Fournisseur ambigu (marque / micro-entreprise), date à année sur 2 chiffres.
+
+attendu:
+  fournisseur: [STUDIO BOTANICA, Lou Huet]
+  numero: "2026-087"
+  date: "2026-06-03"
+  lignes:
+    - { designation: Tonte et débroussaillage (1 200 m²), quantite: 1, prixUnitaire: 320, totalLigne: 320 }
+    - { designation: Taille de haies et évacuation, quantite: 4, prixUnitaire: 95, totalLigne: 285 }
+    - { designation: Plantation massifs (fourniture incluse), quantite: 1, prixUnitaire: 140, totalLigne: 140 }
+    - { designation: Traitement phytosanitaire doux, quantite: 3, prixUnitaire: 60, totalLigne: 180 }
+  totalHT: 1040
+  tauxTVA: 20
+  montantTVA: 208
+  totalTTC: 1248
+
+interdits:
+  totalHT: [925]                        # total recalculé par le LLM
+  totalTTC: [1110]                      # 925 × 1,2
+  date: ["2026-07-03", "2026-03-06"]    # échéance ; jour et mois inversés
+
+avertissements_attendus: [ECART_LIGNE, ECART_SOMME_LIGNES]

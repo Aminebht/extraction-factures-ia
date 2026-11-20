@@ -1,0 +1,24 @@
+fichier: facture_4_hydrofluid_encodage.pdf
+description: >-
+  Couche texte cachée en mojibake (UTF-8 lu comme Latin-1), superposée au visuel. Aucune valeur ne doit
+  contenir de caractères corrompus : le pipeline doit lire le rendu visuel, pas la couche texte.
+
+attendu:
+  fournisseur: HYDROFLUID COMPOSANTS
+  numero: HF-2026-1043
+  date: "2026-05-28"
+  lignes:
+    - { designation: HF-EL220 — Électrovanne 4/3 centre fermé 220 V, quantite: 3, prixUnitaire: 187.40, totalLigne: 562.20 }
+    - { designation: HF-FP60 — Filtre pression 60 µm avec indicateur, quantite: 5, prixUnitaire: 42.90, totalLigne: 214.50 }
+    - { designation: 'HF-FLEX12 — Flexible hydraulique 1/2" long. 1,5 m', quantite: 10, prixUnitaire: 26.35, totalLigne: 263.50 }
+    - { designation: HF-MANO100 — Manomètre glycérine 0-250 bar Ø100, quantite: 4, prixUnitaire: 31.80, totalLigne: 127.20 }
+  totalHT: 1167.40
+  tauxTVA: 20
+  montantTVA: 233.48
+  totalTTC: 1400.88
+
+interdits:
+  fournisseur: ["Ã", "â"]               # mojibake de la couche texte
+  lignes.designation: ["Ã", "â"]
+
+avertissements_attendus: []
