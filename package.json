@@ -8,7 +8,8 @@
   ],
   "scripts": {
     "test": "npm run test --workspaces --if-present",
-    "typecheck": "npm run typecheck --workspaces --if-present"
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "pipeline": "npm run pipeline -w @juwa/pipeline --"
   },
   "engines": {
     "node": ">=20"
