@@ -51,6 +51,12 @@ describe("isForbidden", () => {
     expect(isForbidden("date", ["2026-07-12"], "2026-07-12")).toBe(true);
     expect(isForbidden("text", ["Ã"], "Ã‰lectrovanne")).toBe(true);
     expect(isForbidden("number", [20], 19.6)).toBe(false);
+    expect(isForbidden("text", ["GARNIER Industrie"], "Garnier industrie")).toBe(true);
+  });
+
+  it("ne confond pas un caractère de mojibake avec une lettre accentuée normale", () => {
+    expect(isForbidden("text", ["Ã", "â"], "HYDROFLUID COMPOSANTS")).toBe(false);
+    expect(isForbidden("text", ["Ã", "â"], "Manomètre glycérine")).toBe(false);
   });
 });
 

@@ -51,7 +51,11 @@ export function isForbidden(kind: Kind, forbidden: (string | number)[], got: str
     if (kind === "amount") return toCents(Number(f)) === got;
     if (kind === "number") return Number(f) === Number(got);
     if (kind === "date") return f === got;
-    return String(got).includes(String(f)) || norm(String(got)).includes(norm(String(f)));
+    if (String(got).includes(String(f))) return true;
+    // Comparaison sans casse ni accents seulement pour un vrai mot : « â » (mojibake) deviendrait « a »
+    // et serait trouvé dans n'importe quelle valeur.
+    const folded = norm(String(f));
+    return folded.length >= 4 && norm(String(got)).includes(folded);
   });
 }
 
