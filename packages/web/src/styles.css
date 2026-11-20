@@ -1,0 +1,137 @@
+:root {
+  --text: #1c2430;
+  --muted: #5b6676;
+  --line: #dfe3e8;
+  --surface: #ffffff;
+  --page: #f5f6f8;
+  --accent: #2346c8;
+
+  --ok: #1f7a4d;
+  --ok-bg: #e6f4ec;
+  --warn: #8a5a00;
+  --warn-bg: #fff3d6;
+  --error: #b42318;
+  --error-bg: #fdecea;
+  --neutral-bg: #eceef1;
+
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+  color: var(--text);
+  background: var(--page);
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; }
+h1, h2 { margin: 0; line-height: 1.25; }
+h1 { font-size: 1.4rem; }
+h2 { font-size: 1.2rem; }
+h2, .invoice-list__name, .invoice-list__file, .detail__meta a { overflow-wrap: anywhere; }
+.table-scroll { overflow-x: auto; }
+a { color: var(--accent); }
+
+/* ---------- Mise en page : données à gauche, PDF à droite ---------- */
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 0.85fr);
+  min-height: 100vh;
+}
+.layout__main { padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+.viewer { position: sticky; top: 0; height: 100vh; border-left: 1px solid var(--line); background: var(--neutral-bg); }
+.viewer__frame { width: 100%; height: 100%; border: 0; }
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .viewer { display: none; } /* écran étroit : le lien « Fichier source » ouvre le PDF */
+  .layout__main { padding: 16px; }
+}
+
+/* ---------- États de la page ---------- */
+.page-state { max-width: 640px; margin: 80px auto; padding: 16px 20px; text-align: center; color: var(--muted); }
+.page-state--error { color: var(--error); background: var(--error-bg); border-radius: 8px; }
+
+/* ---------- Résumé ---------- */
+.summary__meta { margin: 4px 0 10px; color: var(--muted); }
+.summary__counts { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.count { padding: 4px 10px; border-radius: 999px; font-size: 0.9rem; }
+.count--ecart, .count--echec { background: var(--error-bg); color: var(--error); }
+.count--a_verifier { background: var(--warn-bg); color: var(--warn); }
+.count--ok { background: var(--ok-bg); color: var(--ok); }
+
+/* ---------- Liste des factures ---------- */
+.invoice-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.invoice-list__item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-areas: "name badge" "file badge";
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: var(--surface);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.invoice-list__item:hover { border-color: #b9c1cc; }
+.invoice-list__item[aria-current="true"] { border-color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); }
+.invoice-list__name { grid-area: name; font-weight: 600; }
+.invoice-list__file { grid-area: file; font-size: 0.85rem; color: var(--muted); }
+.invoice-list__item .badge { grid-area: badge; }
+
+/* ---------- Badges d'état ---------- */
+.badge { padding: 2px 10px; border-radius: 999px; font-size: 0.8rem; font-weight: 600; white-space: nowrap; }
+.badge--ok { background: var(--ok-bg); color: var(--ok); }
+.badge--a_verifier { background: var(--warn-bg); color: var(--warn); }
+.badge--ecart, .badge--echec { background: var(--error-bg); color: var(--error); }
+
+/* ---------- Détail d'une facture ---------- */
+.detail { padding: 20px; border: 1px solid var(--line); border-radius: 10px; background: var(--surface); display: flex; flex-direction: column; gap: 16px; }
+.detail__header { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.detail__meta { display: flex; flex-wrap: wrap; gap: 8px 32px; margin: 0; }
+.detail__meta dt, .totals dt { font-size: 0.8rem; color: var(--muted); }
+.detail__meta dd { margin: 0; font-weight: 600; }
+
+/* ---------- Valeurs extraites : la fiabilité se voit ---------- */
+.field { border-radius: 4px; cursor: help; }
+.field--a_verifier { padding: 0 4px; background: var(--warn-bg); color: var(--warn); }
+.field--absent {
+  display: inline-block;
+  padding: 0 8px;
+  border: 1px dashed var(--error);
+  background: var(--error-bg);
+  color: var(--error);
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.field--flagged { padding: 0 4px; outline: 2px solid var(--error); outline-offset: 1px; color: var(--error); }
+
+/* ---------- Avertissements ---------- */
+.warnings { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.warning { padding: 8px 12px; border-left: 4px solid; border-radius: 0 6px 6px 0; }
+.warning--bloquant { border-color: var(--error); background: var(--error-bg); }
+.warning--attention { border-color: #e0a200; background: var(--warn-bg); }
+.warning__label { margin-right: 8px; font-weight: 700; }
+.warning--bloquant .warning__label { color: var(--error); }
+.warning--attention .warning__label { color: var(--warn); }
+
+.notice { margin: 0; padding: 10px 14px; border-radius: 6px; }
+.notice--ok { background: var(--ok-bg); color: var(--ok); }
+.notice--warning { background: var(--warn-bg); color: var(--warn); }
+.notice--error { background: var(--error-bg); color: var(--error); }
+
+/* ---------- Lignes et totaux ---------- */
+.lines { width: 100%; border-collapse: collapse; }
+.lines th { padding: 6px 8px; border-bottom: 2px solid var(--line); font-size: 0.8rem; color: var(--muted); text-align: left; }
+.lines td { padding: 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+.num { text-align: right; white-space: nowrap; }
+.lines th.num { text-align: right; }
+
+.totals { align-self: flex-end; min-width: 280px; margin: 0; }
+.totals > div { display: flex; justify-content: space-between; gap: 24px; padding: 4px 0; }
+.totals dd { margin: 0; font-variant-numeric: tabular-nums; }
+.totals__ttc { border-top: 2px solid var(--text); margin-top: 4px; padding-top: 8px !important; font-weight: 700; }
+.totals__ttc dt { color: var(--text); font-size: 1rem; }
+
+.hint { margin: 0; font-size: 0.8rem; color: var(--muted); }

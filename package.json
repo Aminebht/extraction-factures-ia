@@ -9,7 +9,9 @@
   "scripts": {
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
-    "pipeline": "npm run pipeline -w @juwa/pipeline --"
+    "pipeline": "npm run pipeline -w @juwa/pipeline --",
+    "dev": "npm run dev -w @juwa/web",
+    "start": "npm run pipeline && npm run dev"
   },
   "engines": {
     "node": ">=20"

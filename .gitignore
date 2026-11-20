@@ -28,3 +28,6 @@ Thumbs.db
 
 # Notes de décision personnelles (non versionnées)
 docs/decisions.md
+
+# Configuration locale des outils
+.claude/
