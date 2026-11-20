@@ -15,5 +15,13 @@ export function formatDate(iso: string): string {
 
 export const formatText = (value: string) => value;
 
+/** Citation lisible pour le comptable : sans gras ni séparateurs de tableau markdown. */
+export const cleanQuote = (quote: string) =>
+  quote
+    .replace(/\*\*|__|^#+\s*/g, "")
+    .replace(/\s*\|\s*/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
 /** URL du PDF original, copié par le pipeline dans le dossier public. */
 export const pdfUrl = (fichier: string) => `/factures/${encodeURIComponent(fichier)}`;

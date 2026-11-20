@@ -1,4 +1,5 @@
 import type { Field } from "@juwa/schema";
+import { cleanQuote } from "../lib/format.ts";
 
 interface Props<T> {
   field: Field<T>;
@@ -22,7 +23,7 @@ export function FieldValue<T>({ field, format, flagged = false }: Props<T>) {
     );
   }
 
-  const source = field.quote ? `Lu sur la facture : « ${field.quote} »` : "";
+  const source = field.quote ? `Lu sur la facture : « ${cleanQuote(field.quote)} »` : "";
   const confidence =
     field.ocrConfidence !== null ? `Confiance de lecture : ${Math.round(field.ocrConfidence * 100)} %` : "";
   const title = [field.status === "a_verifier" ? "Lecture incertaine, à vérifier sur le PDF." : "", source, confidence]
