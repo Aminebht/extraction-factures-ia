@@ -6,7 +6,7 @@ Pipeline TypeScript qui lit des factures PDF hétérogènes et une interface web
 
 ## Setup (< 5 minutes)
 
-Prérequis : Node.js 20 ou plus, une clé API Mistral (compte gratuit sur [console.mistral.ai](https://console.mistral.ai), tier « Experiment », rubrique *API Keys*).
+Prérequis : Node.js 22.12 ou plus (24 LTS recommandé, voir `.nvmrc` ; exigé par Vite 8 et Vitest 5), une clé API Mistral (compte gratuit sur [console.mistral.ai](https://console.mistral.ai), tier « Experiment », rubrique *API Keys*).
 
 ```bash
 npm install
@@ -87,6 +87,8 @@ factures/     Les 4 factures du sujet
 1. **Filet de sécurité (hors ligne, sans API).** On reconstitue une extraction correcte de chaque facture, on y glisse une erreur réaliste, et on mesure si l'ancrage et les contrôles la repèrent : **26/26 erreurs repérées, aucune fausse alerte**. Deux erreurs passent le filet et sont documentées comme limites (ci-dessous).
 2. **Dernier passage du pipeline contre la vérité terrain** (`eval/cas/*.yaml`, relevée à la main). Métrique principale : la **fiabilité des valeurs affichées comme sûres** (une valeur fausse marquée « à vérifier » est rattrapée par le comptable, une valeur fausse affichée comme sûre ne l'est pas). Aussi : couverture, faux amis renvoyés (client, échéance, total recalculé…), écarts attendus détectés, fausses alertes, et pour chaque erreur sa cause probable (OCR ou LLM).
 
+**Résultat mesuré** (20/11/2026, configuration de développement : OCR Gemini `gemini-3.8-flash` + LLM Mistral Small 3.1 via Cloudflare ; à refaire avec l'API Mistral) : **100/100 champs justes**, aucune valeur fausse, aucun faux ami, **2/2 écarts réels détectés** sur Studio Botanica, aucune fausse alerte, 0 facture en échec, en 2 min 16 s pour les 4 factures (concurrence 2). Sur HydroFluid, l'OCR n'a renvoyé aucun mojibake : la couche texte cachée a bien été ignorée.
+
 ## Limites connues
 
 - **Seuils empiriques** (confiance 0,80, tolérance ±1 centime), calibrés sur 4 factures seulement.
@@ -110,8 +112,3 @@ factures/     Les 4 factures du sujet
 - **Identifier le fournisseur avec certitude** : au lieu de se fier au nom lu sur la facture, rechercher le SIRET imprimé dans le fichier fournisseurs de GARNIER. Cela règle les noms ambigus (marque ou raison sociale) et la confusion avec le client. Comparer aussi l'IBAN à celui connu : un IBAN différent signale une possible fraude au changement de RIB.
 - **Moins d'IA quand c'est possible** : avec la réforme de la facturation électronique, une part croissante des factures arrivera au format Factur-X ou UBL, dont le XML embarqué se lit directement, sans OCR ni LLM.
 - **Suivi** : taux de champs laissés vides, « à vérifier » et d'écarts par fournisseur, pour repérer une dérive (nouveau gabarit, baisse de qualité de l'OCR).
-
-
-## Temps passé
-
-_À compléter : estimation honnête par partie (B1 pipeline, B2 interface, eval, README)._

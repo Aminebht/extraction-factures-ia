@@ -16,7 +16,7 @@
     "eval": "npm run eval -w @juwa/eval"
   },
   "engines": {
-    "node": ">=20"
+    "node": ">=22.12"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",
