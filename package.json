@@ -1,0 +1,12 @@
+{
+  "name": "juwa-extraction-factures",
+  "private": true,
+  "type": "module",
+  "description": "Pipeline d'extraction de factures fournisseurs (Mistral OCR + LLM) et interface de vérification",
+  "workspaces": [
+    "packages/*"
+  ],
+  "engines": {
+    "node": ">=20"
+  }
+}

@@ -1,0 +1,30 @@
+# Dépendances et builds
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+# Secrets : la clé Mistral ne doit jamais être commitée
+.env
+.env.*
+!.env.example
+
+# Cache OCR (clé = sha256 du PDF) et sorties du pipeline
+.cache/
+output/
+packages/web/public/results.json
+packages/web/public/factures/
+eval/report.md
+
+# Documents confidentiels du sujet (non diffusables)
+Prêt à envoyer/
+*Sujet_Test_Technique*.pdf
+
+# Éditeurs / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Notes de décision personnelles (non versionnées)
+docs/decisions.md
