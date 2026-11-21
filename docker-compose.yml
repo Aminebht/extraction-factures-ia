@@ -1,0 +1,13 @@
+# Une commande : docker compose up --build   → traite factures/ puis sert l'interface sur http://localhost:5173
+services:
+  app:
+    build: .
+    ports:
+      - "5173:5173"
+    env_file: .env
+    volumes:
+      # Déposer une nouvelle facture dans ./factures puis relancer le conteneur pour la traiter.
+      - ./factures:/app/factures
+      # Résultat et cache OCR conservés sur l'hôte entre deux lancements.
+      - ./output:/app/output
+      - ./.cache:/app/.cache

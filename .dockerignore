@@ -1,0 +1,20 @@
+# Jamais dans l'image : secrets, dépendances de l'hôte, sorties et caches locaux.
+.env
+.env.*
+!.env.example
+node_modules
+**/node_modules
+**/dist
+.cache
+output
+packages/web/public/results.json
+packages/web/public/factures
+eval/report.md
+
+# Inutile à l'exécution
+.git
+.claude
+docs
+Prêt à envoyer
+*.md
+!README.md

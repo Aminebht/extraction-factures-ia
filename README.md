@@ -27,6 +27,15 @@ npm start                 # traite factures/ puis ouvre l'interface sur http://l
 
 Pour traiter une autre facture : la déposer dans `factures/` et relancer `npm run pipeline`, puis rafraîchir la page.
 
+### Avec Docker (sans installer Node)
+
+```bash
+cp .env.example .env      # renseigner les clés ; toutes les variables doivent être dans .env
+docker compose up --build # traite factures/ puis sert l'interface sur http://localhost:5173
+```
+
+Un seul conteneur : au démarrage il lance le pipeline, puis le serveur de l'interface. Attendre la ligne `VITE … ready` dans les logs (1 à 2 minutes) avant d'ouvrir la page : pendant le traitement, le port est déjà ouvert mais rien n'y répond (`ERR_EMPTY_RESPONSE`). La clé API n'est jamais copiée dans l'image : elle arrive au lancement par `env_file`. `factures/`, `output/` et `.cache/` sont montés depuis l'hôte : pour traiter une nouvelle facture, la déposer dans `factures/` et relancer `docker compose up`.
+
 ### Configuration (`.env`)
 
 | Variable | Défaut | Rôle |
