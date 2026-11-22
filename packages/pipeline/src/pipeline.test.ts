@@ -109,6 +109,18 @@ describe("processInvoice : gestion des erreurs", () => {
     expect(calls).toBe(3);
   });
 
+  it("traite un délai dépassé (408) comme passager, puis l'explique au comptable", async () => {
+    const [file] = writePdfs(["a.pdf"]);
+    let calls = 0;
+    const provider = fakeProvider(async () => {
+      calls++;
+      throw new HttpError(408, new Headers(), "Request timeout");
+    });
+    const result = await processInvoice(file!, deps(provider));
+    expect(calls).toBe(3);
+    expect(result.status === "failed" && result.error.message).toContain("trop de temps");
+  });
+
   it("abandonne après 3 tentatives sur 429 : LIMITE_DEBIT", async () => {
     const [file] = writePdfs(["a.pdf"]);
     const provider = fakeProvider(async () => {

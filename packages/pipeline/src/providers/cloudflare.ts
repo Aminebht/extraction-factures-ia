@@ -73,7 +73,9 @@ export function cloudflareLlm(accountId: string, apiToken: string, model: string
         body: JSON.stringify({
           messages,
           temperature: 0,
-          max_tokens: 4096, // défaut Workers AI : 256, trop court pour une facture complète
+          // Défaut Workers AI : 256, trop court. Une citation par champ allonge la réponse : au-delà
+          // d'une trentaine de lignes, Cloudflare tronque (limite de tokens) ou abandonne (408).
+          max_tokens: 8192,
           ...jsonConstraint(model, schema),
         }),
       });

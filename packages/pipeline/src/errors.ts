@@ -36,7 +36,7 @@ function httpInfo(error: unknown): { status: number; headers: Headers } | null {
 /** Erreur passagère qui mérite une nouvelle tentative : débit, serveur, réseau. */
 export function isTransient(error: unknown): boolean {
   const http = httpInfo(error);
-  if (http) return http.status === 429 || http.status >= 500;
+  if (http) return http.status === 408 || http.status === 429 || http.status >= 500;
   if (error instanceof HTTPClientError) return true; // connexion, timeout (SDK Mistral)
   return error instanceof TypeError && /fetch/i.test(error.message);
 }
@@ -54,6 +54,9 @@ export function toPipelineError(error: unknown, step: "OCR" | "LLM"): PipelineEr
   const http = httpInfo(error);
   if (http?.status === 429) {
     return new PipelineError("LIMITE_DEBIT", "Le service d'IA est saturé (limite de débit atteinte). Relancer le traitement plus tard.", { cause: error });
+  }
+  if (http?.status === 408) {
+    return new PipelineError("RESEAU", "Le service d'IA a mis trop de temps à répondre (facture très longue ?). À saisir manuellement ou à relancer.", { cause: error });
   }
   if (http?.status === 401 || http?.status === 403) {
     return new PipelineError("RESEAU", "La clé d'accès au service d'IA est refusée. Vérifier la configuration .env.", { cause: error });
