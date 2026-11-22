@@ -46,7 +46,7 @@ Un seul conteneur : au démarrage il lance le pipeline, puis le serveur de l'int
 | `CONCURRENCY` | `2` | Factures traitées en parallèle (le tier gratuit a une limite de débit basse) |
 | `OCR_CONFIDENCE_THRESHOLD` | `0.8` | En dessous, une valeur prouvée passe « à vérifier » |
 | `INVOICES_DIR`, `OUTPUT_PATH` | `factures`, `output/results.json` | Entrée et sortie |
-| `OCR_PROVIDER`, `LLM_PROVIDER` | `mistral`, `mistral` | Fournisseurs choisis séparément ; `gemini` (OCR) et `cloudflare` (OCR, LLM) servent au développement, voir limites |
+| `OCR_PROVIDER`, `LLM_PROVIDER` | `mistral`, `mistral` | Fournisseurs choisis séparément ; `gemini` et `cloudflare` (OCR comme LLM) servent au développement, voir limites |
 
 ## Architecture
 
@@ -101,21 +101,29 @@ factures/     Les 4 factures du sujet
 
 3. **Factures synthétiques à pièges** (`npm run eval:synthetiques`). Quatre factures ne suffisent pas à tester l'OCR et le LLM sur des documents inconnus, et il n'existe pas de jeu public de factures françaises annotées. `eval/src/synthetiques/` génère donc 12 PDF (3 mises en page) dont chacun isole un piège, avec une vérité terrain produite à partir des mêmes données : TVA à 5,5 %, total HT ou TTC faux sur le document, numéro de commande et code client près du numéro de facture, dates de livraison et d'échéance près de la date d'émission, client en en-tête, numéro absent, deux taux de TVA, remise négative, quantités décimales et séparateur « 1.234,56 », facture de 40 lignes sur deux pages. Ces factures passent dans la chaîne complète mais n'alimentent pas l'interface ; `npm run eval:generer` les régénère.
 
-   **Résultat mesuré** (22/11/2026, même configuration de développement) : **11 pièges sur 12 déjoués, aucune valeur fausse affichée comme sûre, aucun faux ami, 2/2 écarts détectés**. La facture de 40 lignes échoue proprement (« le service d'IA a mis trop de temps ») : la réponse, une citation par champ, dépasse le délai de Cloudflare (voir limites). Le premier passage a aussi révélé deux problèmes, corrigés : le LLM cite parfois des cellules d'une même ligne en sautant une colonne (« Manuel… | 64,00 »), ce que l'ancrage accepte désormais à condition que toutes les cellules soient, dans l'ordre, sur la même ligne du document ; et une erreur dans la vérité terrain elle-même (un total de TVA attendu alors qu'il n'est pas imprimé), que le pipeline avait eu raison de ne pas inventer.
+   **Résultats mesurés** (22/11/2026, OCR Gemini dans les deux cas) :
+
+   | LLM | Pièges déjoués | Champs justes | Valeurs fausses affichées comme sûres | Écarts détectés |
+   |---|---|---|---|---|
+   | Gemini `gemini-3.8-flash` | **12 / 12** | 357 / 357 | 0 | 2 / 2 |
+   | Mistral Small 3.1 via Cloudflare | 11 / 12 | 190 / 357 | 0 | 2 / 2 |
+
+   Avec Cloudflare, seule la facture de 40 lignes échoue, proprement (« le service d'IA a mis trop de temps ») : sa réponse, une citation par champ, dépasse le délai du fournisseur. Dans les deux cas, aucune valeur fausse n'est affichée comme sûre. Le premier passage a aussi révélé deux problèmes, corrigés : le LLM cite parfois des cellules d'une même ligne en sautant une colonne (« Manuel… | 64,00 »), ce que l'ancrage accepte désormais à condition que toutes les cellules soient, dans l'ordre, sur la même ligne du document ; et une erreur dans la vérité terrain elle-même (un total de TVA attendu alors qu'il n'est pas imprimé), que le pipeline avait eu raison de ne pas inventer.
 
 ## Limites connues
 
 - **Seuils empiriques** (confiance 0,80, tolérance ±1 centime), calibrés sur 4 factures seulement.
 - **L'ancrage prouve qu'une valeur n'est pas inventée, pas qu'elle est dans le bon champ** : si le LLM met le nom du client dans « fournisseur », la valeur figure bien sur la facture et passe. De même, une quantité et un prix unitaire échangés avec leurs citations laissent le produit inchangé et échappent aux contrôles.
 - **Une mauvaise lecture OCR reproduite par le LLM** passe l'ancrage ; elle n'est repérée que si elle casse l'arithmétique.
-- **Factures longues** : une citation par champ rend la réponse du LLM volumineuse. Avec le LLM Cloudflare, une facture d'une quarantaine de lignes dépasse le délai de réponse (erreur 408, facture marquée « non traitée ») ; à vérifier avec l'API Mistral. Piste : découper les lignes en plusieurs appels.
+- **Factures longues** : une citation par champ rend la réponse du LLM volumineuse (environ 160 citations pour 40 lignes). Le LLM Cloudflare (Mistral Small 3.1) dépasse alors son délai de réponse (erreur 408, facture marquée « non traitée ») ; Gemini traite la même facture sans erreur en une minute. La limite dépend donc du fournisseur : à vérifier avec l'API Mistral. Piste si besoin : découper les lignes en plusieurs appels.
 - **Factures synthétiques** : PDF natifs et propres, ils testent le raisonnement du LLM et l'ancrage, pas l'OCR d'un scan dégradé (couvert seulement par la facture de 2009).
 - **TVA à plusieurs taux** non représentée : un seul `tauxTVA`, mis à `null` si plusieurs taux figurent.
 - **Désignations** comparées avec une tolérance (80 % des mots) ; dates à année sur 2 chiffres interprétées en 20XX ; euros uniquement.
 - **Fournisseurs de développement** (le sujet impose l'API Mistral ; l'OCR et le LLM se choisissent séparément) :
   - `OCR_PROVIDER=gemini` lit le PDF par vision (images des pages seules, `contentLayers: ["PAGE_IMAGE"]`), mais ne donne pas de confiance par mot : aucun champ ne passe « à vérifier ». Les données du tier gratuit peuvent servir à entraîner les modèles de Google.
   - `OCR_PROVIDER=cloudflare` (`toMarkdown`) lit la couche texte du PDF au lieu du rendu : mojibake sur HydroFluid, aucun texte sur le scan.
-  - `LLM_PROVIDER=cloudflare` utilise Mistral Small 3.1 hébergé par Cloudflare.
+  - `LLM_PROVIDER=gemini` utilise Gemini avec une sortie JSON contrainte par le schéma (`responseJsonSchema`).
+  - `LLM_PROVIDER=cloudflare` utilise Mistral Small 3.1 hébergé par Cloudflare ; il échoue sur les factures longues (voir ci-dessus).
 - Pas de surlignage de la valeur dans le PDF (les coordonnées des blocs OCR le permettraient).
 
 ## Passer de 4 à 4 000 factures par mois
