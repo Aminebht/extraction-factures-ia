@@ -24,7 +24,7 @@ npm start                 # traite factures/ puis ouvre l'interface sur http://l
 | `npm test` | Tests automatisés (sans réseau) |
 | `npm run typecheck` | Vérification des types de tous les paquets |
 | `npm run eval` | Rapport d'évaluation (voir plus bas) |
-| `npm run eval:synthetiques` | Chaîne complète sur 12 factures synthétiques à pièges (`-- --rescorer` : renoter sans rappeler les API) |
+| `npm run eval:synthetiques` | Chaîne complète sur 18 factures synthétiques à pièges, dont 6 scans dégradés (`-- --rescorer` : renoter sans rappeler les API ; `-- --seulement d05` : une seule facture) |
 
 Pour traiter une autre facture : la déposer dans `factures/` et relancer `npm run pipeline`, puis rafraîchir la page.
 
