@@ -3,7 +3,7 @@
  * Mistral par défaut pour les deux : c'est la configuration exigée par le sujet.
  */
 import { cloudflareLlm, cloudflareOcr } from "./cloudflare.ts";
-import { geminiOcr } from "./gemini.ts";
+import { geminiLlm, geminiOcr } from "./gemini.ts";
 import { mistralLlm, mistralOcr } from "./mistral.ts";
 import type { LlmProvider, OcrProvider } from "./types.ts";
 
@@ -42,7 +42,13 @@ export function createLlmProvider(): LlmProvider {
         env("CLOUDFLARE_API_TOKEN"),
         process.env.CLOUDFLARE_LLM_MODEL?.trim() || "@cf/mistralai/mistral-small-3.1-24b-instruct",
       );
+    case "gemini":
+      return geminiLlm(
+        env("GEMINI_API_KEY"),
+        process.env.GEMINI_LLM_MODEL?.trim() || "gemini-3.8-flash",
+        Number(process.env.GEMINI_MAX_TOKENS) || 32768,
+      );
     default:
-      throw new Error(`LLM_PROVIDER inconnu : « ${provider} » (valeurs possibles : mistral, cloudflare).`);
+      throw new Error(`LLM_PROVIDER inconnu : « ${provider} » (valeurs possibles : mistral, gemini, cloudflare).`);
   }
 }
