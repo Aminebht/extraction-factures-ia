@@ -39,6 +39,23 @@ describe("locateQuote", () => {
   it("renvoie null pour une citation inventée", () => {
     expect(locateQuote(fakeOcr(F2), "TOTAL HT 925€")).toBeNull();
   });
+
+  const TABLE = "| Désignation | Qté | P.U. HT | Total HT |\n| Manuel d'hydraulique | 3 | 64,00 | 192,00 |\n| Guide des vérins | 5 | 38,50 | 192,50 |";
+
+  it("accepte des cellules d'une même ligne de tableau, colonne intermédiaire omise", () => {
+    const ocr = fakeOcr(TABLE);
+    const location = locateQuote(ocr, "Manuel d'hydraulique | 64,00");
+    expect(location).not.toBeNull();
+    expect(ocr.pages[0]!.markdown.slice(location!.start, location!.end)).toBe("Manuel d'hydraulique | 3 | 64,00");
+  });
+
+  it("refuse des cellules prises sur deux lignes différentes du tableau", () => {
+    expect(locateQuote(fakeOcr(TABLE), "Manuel d'hydraulique | 38,50")).toBeNull();
+  });
+
+  it("refuse des cellules dans le désordre", () => {
+    expect(locateQuote(fakeOcr(TABLE), "64,00 | Manuel d'hydraulique")).toBeNull();
+  });
 });
 
 describe("certifyField", () => {

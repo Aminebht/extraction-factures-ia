@@ -63,6 +63,36 @@ export function locateQuote(ocr: OcrResult, quote: string): QuoteLocation | null
       return { page, start: haystack.map[at]!, end: haystack.map[at + needle.length - 1]! + 1 };
     }
   }
+  return quote.includes("|") ? locateTableRowQuote(ocr, quote) : null;
+}
+
+/**
+ * Citation faite de cellules d'une même ligne de tableau, colonnes intermédiaires omises
+ * (« Manuel d'hydraulique | 64,00 » alors que la quantité sépare les deux cellules). Acceptée
+ * seulement si toutes les cellules figurent, dans l'ordre, sur une seule ligne du document :
+ * la valeur reste prouvée, et rattachée à la bonne ligne.
+ */
+function locateTableRowQuote(ocr: OcrResult, quote: string): QuoteLocation | null {
+  const cells = quote.split("|").map((c) => normalizeWithMap(c).text).filter(Boolean);
+  if (cells.length < 2) return null;
+  for (const page of ocr.pages) {
+    let offset = 0;
+    for (const line of page.markdown.split("\n")) {
+      const { text, map } = normalizeWithMap(line);
+      let from = 0;
+      const found: [number, number][] = [];
+      for (const cell of cells) {
+        const at = text.indexOf(cell, from);
+        if (at < 0) break;
+        found.push([at, at + cell.length - 1]);
+        from = at + cell.length;
+      }
+      if (found.length === cells.length) {
+        return { page, start: offset + map[found[0]![0]]!, end: offset + map[found.at(-1)![1]]! + 1 };
+      }
+      offset += line.length + 1;
+    }
+  }
   return null;
 }
 
