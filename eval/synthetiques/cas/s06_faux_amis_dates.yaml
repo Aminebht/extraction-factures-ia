@@ -1,0 +1,29 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Date de livraison et date d'échéance imprimées à côté de la date d'émission.
+fichier: s06_faux_amis_dates.pdf
+description: "Synthétique : Date de livraison et date d'échéance imprimées à
+  côté de la date d'émission."
+attendu:
+  fournisseur: LUBRIFIANTS SAVOIE INDUSTRIE
+  numero: LSI-2026-0661
+  date: 2026-06-05
+  lignes:
+    - designation: Huile hydraulique HV 46 (fût 208 L)
+      quantite: 2
+      prixUnitaire: 512
+      totalLigne: 1024
+    - designation: Graisse multi-usages (seau 18 kg)
+      quantite: 3
+      prixUnitaire: 96
+      totalLigne: 288
+  totalHT: 1312
+  tauxTVA: 20
+  montantTVA: 262.4
+  totalTTC: 1574.4
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+  date:
+    - 2026-06-02
+    - 2026-07-31
+avertissements_attendus: []

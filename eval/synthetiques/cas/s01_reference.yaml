@@ -1,0 +1,34 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Facture propre de référence : aucune anomalie, tout doit être « ok ».
+fichier: s01_reference.pdf
+description: "Synthétique : Facture propre de référence : aucune anomalie, tout
+  doit être « ok »."
+attendu:
+  fournisseur: FOURNITURES INDUSTRIELLES DU RHÔNE
+  numero: FI-2026-0815
+  date: 2026-09-14
+  lignes:
+    - designation: Gants de manutention nitrile (boîte de 50)
+      quantite: 6
+      prixUnitaire: 18.4
+      totalLigne: 110.4
+    - designation: Lunettes de protection EN166
+      quantite: 12
+      prixUnitaire: 7.95
+      totalLigne: 95.4
+    - designation: Ruban de signalisation 100 m
+      quantite: 4
+      prixUnitaire: 11.2
+      totalLigne: 44.8
+    - designation: Chiffons industriels (sac de 10 kg)
+      quantite: 3
+      prixUnitaire: 26.5
+      totalLigne: 79.5
+  totalHT: 330.1
+  tauxTVA: 20
+  montantTVA: 66.02
+  totalTTC: 396.12
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+avertissements_attendus: []

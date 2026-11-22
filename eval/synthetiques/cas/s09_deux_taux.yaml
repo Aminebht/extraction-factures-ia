@@ -1,0 +1,29 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Deux taux de TVA (10 % et 20 %) : un seul taux ne peut pas être renvoyé (limite connue).
+fichier: s09_deux_taux.pdf
+description: "Synthétique : Deux taux de TVA (10 % et 20 %) : un seul taux ne
+  peut pas être renvoyé (limite connue)."
+attendu:
+  fournisseur: RESTAURATION COLLECTIVE DAUPHINÉ
+  numero: RCD-2026-1207
+  date: 2026-10-31
+  lignes:
+    - designation: Repas salariés (octobre)
+      quantite: 412
+      prixUnitaire: 9.6
+      totalLigne: 3955.2
+    - designation: Boissons fournies
+      quantite: 120
+      prixUnitaire: 2.5
+      totalLigne: 300
+  totalHT: 4255.2
+  tauxTVA: null
+  montantTVA: null
+  totalTTC: 4710.72
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+  tauxTVA:
+    - 10
+    - 20
+avertissements_attendus: []

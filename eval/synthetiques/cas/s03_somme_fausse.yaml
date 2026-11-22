@@ -1,0 +1,33 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Le total HT imprimé ne correspond pas à la somme des lignes : transcrire, puis signaler l'écart.
+fichier: s03_somme_fausse.pdf
+description: "Synthétique : Le total HT imprimé ne correspond pas à la somme des
+  lignes : transcrire, puis signaler l'écart."
+attendu:
+  fournisseur: NETTOYAGE PRO ALPES
+  numero: NPA-2026-218
+  date: 2026-08-29
+  lignes:
+    - designation: Nettoyage atelier (forfait mensuel)
+      quantite: 1
+      prixUnitaire: 680
+      totalLigne: 680
+    - designation: Vitrerie bureaux
+      quantite: 2
+      prixUnitaire: 145
+      totalLigne: 290
+    - designation: Évacuation déchets industriels
+      quantite: 3
+      prixUnitaire: 92
+      totalLigne: 276
+  totalHT: 1366
+  tauxTVA: 20
+  montantTVA: 273.2
+  totalTTC: 1639.2
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+  totalHT:
+    - 1246
+avertissements_attendus:
+  - ECART_SOMME_LIGNES

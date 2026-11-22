@@ -1,0 +1,26 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Aucun numéro de facture n'est imprimé : le pipeline doit s'abstenir, pas inventer.
+fichier: s08_numero_absent.pdf
+description: "Synthétique : Aucun numéro de facture n'est imprimé : le pipeline
+  doit s'abstenir, pas inventer."
+attendu:
+  fournisseur: IMPRIMERIE DU NORD-ISÈRE
+  numero: null
+  date: 2026-04-09
+  lignes:
+    - designation: Étiquettes produit 50 x 30 mm (rouleau de 1 000)
+      quantite: 10
+      prixUnitaire: 21
+      totalLigne: 210
+    - designation: Notices techniques A4 recto-verso
+      quantite: 500
+      prixUnitaire: 0.18
+      totalLigne: 90
+  totalHT: 300
+  tauxTVA: 20
+  montantTVA: 60
+  totalTTC: 360
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+avertissements_attendus: []

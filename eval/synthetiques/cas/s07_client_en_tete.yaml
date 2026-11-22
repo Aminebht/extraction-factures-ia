@@ -1,0 +1,26 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Le nom du client domine l'en-tête ; le fournisseur n'apparaît qu'en petit.
+fichier: s07_client_en_tete.pdf
+description: "Synthétique : Le nom du client domine l'en-tête ; le fournisseur
+  n'apparaît qu'en petit."
+attendu:
+  fournisseur: ATELIER SOUDURE DU BUGEY
+  numero: ASB-0392
+  date: 2026-05-18
+  lignes:
+    - designation: Soudure TIG châssis inox
+      quantite: 2
+      prixUnitaire: 340
+      totalLigne: 680
+    - designation: Contrôle ressuage
+      quantite: 2
+      prixUnitaire: 75
+      totalLigne: 150
+  totalHT: 830
+  tauxTVA: 20
+  montantTVA: 166
+  totalTTC: 996
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+avertissements_attendus: []

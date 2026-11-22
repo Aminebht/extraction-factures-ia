@@ -1,0 +1,29 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Le total TTC imprimé ne vaut pas HT + TVA : transcrire, puis signaler l'écart.
+fichier: s04_ttc_faux.pdf
+description: "Synthétique : Le total TTC imprimé ne vaut pas HT + TVA :
+  transcrire, puis signaler l'écart."
+attendu:
+  fournisseur: TRANSPORTS VERCORS LOGISTIQUE
+  numero: TVL-104477
+  date: 2026-07-21
+  lignes:
+    - designation: Transport palettes Bourgoin - Lyon
+      quantite: 4
+      prixUnitaire: 185
+      totalLigne: 740
+    - designation: Hayon élévateur
+      quantite: 1
+      prixUnitaire: 45
+      totalLigne: 45
+  totalHT: 785
+  tauxTVA: 20
+  montantTVA: 157
+  totalTTC: 972
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+  totalTTC:
+    - 942
+avertissements_attendus:
+  - ECART_TTC

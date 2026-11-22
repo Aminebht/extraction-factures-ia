@@ -7,12 +7,18 @@
   "scripts": {
     "eval": "tsx src/run.ts",
     "typecheck": "tsc -p tsconfig.json",
-    "test": "vitest run"
+    "test": "vitest run",
+    "generer": "tsx src/synthetiques/generate.ts",
+    "synthetiques": "tsx src/synthetiques/run.ts"
   },
   "dependencies": {
     "@juwa/pipeline": "*",
     "@juwa/schema": "*",
     "yaml": "^2.9.1",
     "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/pdfkit": "^0.17.7",
+    "pdfkit": "^0.21.0"
   }
 }

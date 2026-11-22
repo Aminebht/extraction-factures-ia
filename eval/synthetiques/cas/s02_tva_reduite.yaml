@@ -1,0 +1,32 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : TVA à 5,5 % (livres techniques) : le taux lu ne doit pas être remplacé par 20 %.
+fichier: s02_tva_reduite.pdf
+description: "Synthétique : TVA à 5,5 % (livres techniques) : le taux lu ne doit
+  pas être remplacé par 20 %."
+attendu:
+  fournisseur: LIBRAIRIE TECHNIQUE LYONNAISE
+  numero: LT-26-3342
+  date: 2026-10-02
+  lignes:
+    - designation: Manuel d'hydraulique industrielle, 4e édition
+      quantite: 3
+      prixUnitaire: 64
+      totalLigne: 192
+    - designation: Normes ISO 4413 - recueil commenté
+      quantite: 1
+      prixUnitaire: 142
+      totalLigne: 142
+    - designation: Guide de maintenance des vérins
+      quantite: 5
+      prixUnitaire: 38.5
+      totalLigne: 192.5
+  totalHT: 526.5
+  tauxTVA: 5.5
+  montantTVA: 28.96
+  totalTTC: 555.46
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+  tauxTVA:
+    - 20
+avertissements_attendus: []

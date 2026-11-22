@@ -1,0 +1,30 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Quantités décimales (heures) et séparateur de milliers « . » (1.234,56 €).
+fichier: s11_decimales_point.pdf
+description: "Synthétique : Quantités décimales (heures) et séparateur de
+  milliers « . » (1.234,56 €)."
+attendu:
+  fournisseur: LOCATION ENGINS CHAMBÉRY
+  numero: LEC-2026-2231
+  date: 2026-08-11
+  lignes:
+    - designation: Location chariot élévateur 3 t (jours)
+      quantite: 12
+      prixUnitaire: 145
+      totalLigne: 1740
+    - designation: Main d'oeuvre cariste (heures)
+      quantite: 7.5
+      prixUnitaire: 42
+      totalLigne: 315
+    - designation: Livraison et reprise
+      quantite: 1
+      prixUnitaire: 260
+      totalLigne: 260
+  totalHT: 2315
+  tauxTVA: 20
+  montantTVA: 463
+  totalTTC: 2778
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+avertissements_attendus: []

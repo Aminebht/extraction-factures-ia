@@ -13,7 +13,9 @@
     "pipeline": "npm run pipeline -w @juwa/pipeline --",
     "dev": "npm run dev -w @juwa/web",
     "start": "npm run pipeline && npm run dev",
-    "eval": "npm run eval -w @juwa/eval"
+    "eval": "npm run eval -w @juwa/eval",
+    "eval:generer": "npm run generer -w @juwa/eval",
+    "eval:synthetiques": "npm run synthetiques -w @juwa/eval --"
   },
   "engines": {
     "node": ">=22.12"

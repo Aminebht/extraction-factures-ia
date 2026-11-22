@@ -1,0 +1,29 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Ligne de remise à montant négatif.
+fichier: s10_remise.pdf
+description: "Synthétique : Ligne de remise à montant négatif."
+attendu:
+  fournisseur: MAINTENANCE HYDRAULIQUE ISÈRE
+  numero: MHI-26-0590
+  date: 2026-09-03
+  lignes:
+    - designation: Révision groupe hydraulique 15 kW
+      quantite: 1
+      prixUnitaire: 890
+      totalLigne: 890
+    - designation: Remplacement flexibles
+      quantite: 6
+      prixUnitaire: 54
+      totalLigne: 324
+    - designation: Remise fidélité
+      quantite: 1
+      prixUnitaire: -61.4
+      totalLigne: -61.4
+  totalHT: 1152.6
+  tauxTVA: 20
+  montantTVA: 230.52
+  totalTTC: 1383.12
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+avertissements_attendus: []
