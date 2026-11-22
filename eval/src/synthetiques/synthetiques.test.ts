@@ -3,9 +3,9 @@ import path from "node:path";
 import { describe, expect, it } from "vitest";
 import { stringify } from "yaml";
 import { EvalCase, loadCases } from "../cases.ts";
-import { compute, groundTruth } from "./compute.ts";
+import { compute, degradedGroundTruth, groundTruth } from "./compute.ts";
 import { SYNTH_CASES_DIR } from "./generate.ts";
-import { SPECS } from "./specs.ts";
+import { DEGRADED, SPECS } from "./specs.ts";
 
 const truthOf = (id: string) => {
   const spec = SPECS.find((s) => s.id === id)!;
@@ -43,12 +43,26 @@ describe("vérité terrain synthétique", () => {
     expect(truthOf("s08_numero_absent").attendu.numero).toBeNull();
   });
 
+  it("une variante scannée garde la vérité terrain de sa facture d'origine, plus les faux amis du scan", () => {
+    const d = DEGRADED.find((x) => x.id === "d03_tampon_sur_totaux")!;
+    const source = SPECS.find((s) => s.id === d.source)!;
+    const t = degradedGroundTruth(d, source);
+    expect(t.attendu).toEqual(groundTruth(source, compute(source)).attendu);
+    expect(t.interdits.date).toContain("2026-07-25");
+    expect(t.fichier).toBe("d03_tampon_sur_totaux.pdf");
+  });
+
   it("les fichiers YAML du repo correspondent au générateur (pas de modification à la main)", async () => {
     const onDisk = await loadCases(SYNTH_CASES_DIR);
-    expect(onDisk.map((c) => c.fichier)).toEqual(SPECS.map((s) => `${s.id}.pdf`));
+    const expected = [...DEGRADED.map((d) => `${d.id}.pdf`), ...SPECS.map((s) => `${s.id}.pdf`)].sort();
+    expect(onDisk.map((c) => c.fichier).sort()).toEqual(expected);
     for (const spec of SPECS) {
       const file = await readFile(path.join(SYNTH_CASES_DIR, `${spec.id}.yaml`), "utf8");
       expect(file.endsWith(stringify(groundTruth(spec, compute(spec)))), spec.id).toBe(true);
+    }
+    for (const d of DEGRADED) {
+      const file = await readFile(path.join(SYNTH_CASES_DIR, `${d.id}.yaml`), "utf8");
+      expect(file.endsWith(stringify(degradedGroundTruth(d, SPECS.find((s) => s.id === d.source)!))), d.id).toBe(true);
     }
   });
 });

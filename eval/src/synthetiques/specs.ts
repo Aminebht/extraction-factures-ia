@@ -40,6 +40,59 @@ export interface Spec {
 
 const fournisseur = (nom: string, adresse: string, siret: string) => ({ nom, adresse, siret });
 
+/** Variante « scannée » d'une facture : mêmes valeurs, mais l'OCR doit lire une image abîmée. */
+export interface DegradedSpec {
+  id: string;
+  /** Facture d'origine (id de SPECS). */
+  source: string;
+  piege: string;
+  degradation: import("./degrade.ts").Degradation;
+  /** Faux amis ajoutés par la dégradation (ex. date du tampon). */
+  interditsEnPlus?: Record<string, (string | number)[]>;
+}
+
+const SCAN = { papier: "#f2efe6", fax: false } as const;
+
+export const DEGRADED: DegradedSpec[] = [
+  {
+    id: "d01_scan_correct",
+    source: "s01_reference",
+    piege: "Scan correct : 150 dpi, légère rotation, papier grisé, compression JPEG.",
+    degradation: { ...SCAN, dpi: 150, rotation: 0.8, flou: 0.4, bruit: 0.06, qualiteJpeg: 70 },
+  },
+  {
+    id: "d02_mauvais_scan",
+    source: "s05_faux_amis_numeros",
+    piege: "Mauvais scan (110 dpi, rotation de 2,5°, flou et bruit) d'une facture à faux amis de numéros.",
+    degradation: { ...SCAN, dpi: 110, rotation: -2.5, flou: 0.9, bruit: 0.18, qualiteJpeg: 45 },
+  },
+  {
+    id: "d03_tampon_sur_totaux",
+    source: "s04_ttc_faux",
+    piege: "Tampon rouge « PAYÉ LE 25/07/2026 » posé sur les totaux, avec un TTC faux sur le document.",
+    degradation: { ...SCAN, dpi: 150, rotation: 0.5, flou: 0.3, bruit: 0.05, qualiteJpeg: 70, tampon: { texte: "PAYÉ LE 25/07/2026", x: 0.74, y: 0.36, angle: -12 } },
+    interditsEnPlus: { date: ["2026-07-25"] },
+  },
+  {
+    id: "d04_photo_telephone",
+    source: "s10_remise",
+    piege: "Photo de téléphone : rotation de 4°, ombre sur la page, forte compression (avec une remise négative).",
+    degradation: { ...SCAN, papier: "#ece6d8", dpi: 130, rotation: 4, flou: 0.7, bruit: 0.1, qualiteJpeg: 35, ombre: true },
+  },
+  {
+    id: "d05_fax",
+    source: "s02_tva_reduite",
+    piege: "Fax noir et blanc à 100 dpi avec parasites (TVA à 5,5 %).",
+    degradation: { papier: "#ffffff", dpi: 100, rotation: -1.2, flou: 0.5, bruit: 0.25, qualiteJpeg: 60, fax: true },
+  },
+  {
+    id: "d06_scan_deux_pages",
+    source: "s12_multipage",
+    piege: "Scan de la facture de 40 lignes sur deux pages.",
+    degradation: { ...SCAN, dpi: 140, rotation: 1.2, flou: 0.5, bruit: 0.08, qualiteJpeg: 60 },
+  },
+];
+
 export const SPECS: Spec[] = [
   {
     id: "s01_reference",

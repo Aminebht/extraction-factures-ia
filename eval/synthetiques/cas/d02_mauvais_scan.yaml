@@ -1,0 +1,33 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Mauvais scan (110 dpi, rotation de 2,5°, flou et bruit) d'une facture à faux amis de numéros.
+fichier: d02_mauvais_scan.pdf
+description: "Synthétique : Mauvais scan (110 dpi, rotation de 2,5°, flou et
+  bruit) d'une facture à faux amis de numéros."
+attendu:
+  fournisseur: ÉLECTRO-SERVICES ISÈRE
+  numero: FA-26-1189
+  date: 2026-06-30
+  lignes:
+    - designation: Contacteur tripolaire 25 A
+      quantite: 6
+      prixUnitaire: 48.9
+      totalLigne: 293.4
+    - designation: Relais thermique 9-13 A
+      quantite: 6
+      prixUnitaire: 36.4
+      totalLigne: 218.4
+    - designation: Intervention technicien (heure)
+      quantite: 3
+      prixUnitaire: 68
+      totalLigne: 204
+  totalHT: 715.8
+  tauxTVA: 20
+  montantTVA: 143.16
+  totalTTC: 858.96
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+  numero:
+    - BC-2026-0457
+    - CLI-08812
+avertissements_attendus: []

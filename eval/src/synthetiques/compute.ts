@@ -2,7 +2,7 @@
  * Montants imprimés et vérité terrain d'une facture synthétique, calculés en centimes entiers.
  */
 import type { EvalCase } from "../cases.ts";
-import type { Spec } from "./specs.ts";
+import type { DegradedSpec, Spec } from "./specs.ts";
 
 export interface ComputedLine {
   designation: string;
@@ -58,6 +58,14 @@ export function compute(spec: Spec): Computed {
 }
 
 const euros = (c: number) => c / 100;
+
+/** Vérité terrain d'une variante scannée : celle de la facture d'origine, plus les faux amis du scan. */
+export function degradedGroundTruth(d: DegradedSpec, source: Spec): EvalCase {
+  const base = groundTruth(source, compute(source));
+  const interdits = { ...base.interdits };
+  for (const [field, values] of Object.entries(d.interditsEnPlus ?? {})) interdits[field] = [...(interdits[field] ?? []), ...values];
+  return { ...base, fichier: `${d.id}.pdf`, description: `Synthétique : ${d.piege}`, interdits };
+}
 
 /** Vérité terrain au format des cas de l'eval (montants en euros). */
 export function groundTruth(spec: Spec, c: Computed): EvalCase {

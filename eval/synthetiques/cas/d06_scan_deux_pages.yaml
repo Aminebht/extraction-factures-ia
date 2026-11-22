@@ -1,0 +1,177 @@
+# Généré par eval/src/synthetiques/generate.ts : ne pas modifier à la main.
+# Piège : Scan de la facture de 40 lignes sur deux pages.
+fichier: d06_scan_deux_pages.pdf
+description: "Synthétique : Scan de la facture de 40 lignes sur deux pages."
+attendu:
+  fournisseur: QUINCAILLERIE PROFESSIONNELLE CENTRE-EST
+  numero: QPCE-2026-7712
+  date: 2026-11-04
+  lignes:
+    - designation: Visserie inox A4 réf. VX-100 (lot de 100)
+      quantite: 1
+      prixUnitaire: 4.2
+      totalLigne: 4.2
+    - designation: Visserie inox A4 réf. VX-107 (lot de 100)
+      quantite: 2
+      prixUnitaire: 5.55
+      totalLigne: 11.1
+    - designation: Visserie inox A4 réf. VX-114 (lot de 100)
+      quantite: 3
+      prixUnitaire: 6.9
+      totalLigne: 20.7
+    - designation: Visserie inox A4 réf. VX-121 (lot de 100)
+      quantite: 4
+      prixUnitaire: 8.25
+      totalLigne: 33
+    - designation: Visserie inox A4 réf. VX-128 (lot de 100)
+      quantite: 5
+      prixUnitaire: 9.6
+      totalLigne: 48
+    - designation: Visserie inox A4 réf. VX-135 (lot de 100)
+      quantite: 1
+      prixUnitaire: 10.95
+      totalLigne: 10.95
+    - designation: Visserie inox A4 réf. VX-142 (lot de 100)
+      quantite: 2
+      prixUnitaire: 12.3
+      totalLigne: 24.6
+    - designation: Visserie inox A4 réf. VX-149 (lot de 100)
+      quantite: 3
+      prixUnitaire: 13.65
+      totalLigne: 40.95
+    - designation: Visserie inox A4 réf. VX-156 (lot de 100)
+      quantite: 4
+      prixUnitaire: 15
+      totalLigne: 60
+    - designation: Visserie inox A4 réf. VX-163 (lot de 100)
+      quantite: 5
+      prixUnitaire: 16.35
+      totalLigne: 81.75
+    - designation: Visserie inox A4 réf. VX-170 (lot de 100)
+      quantite: 1
+      prixUnitaire: 17.7
+      totalLigne: 17.7
+    - designation: Visserie inox A4 réf. VX-177 (lot de 100)
+      quantite: 2
+      prixUnitaire: 19.05
+      totalLigne: 38.1
+    - designation: Visserie inox A4 réf. VX-184 (lot de 100)
+      quantite: 3
+      prixUnitaire: 20.4
+      totalLigne: 61.2
+    - designation: Visserie inox A4 réf. VX-191 (lot de 100)
+      quantite: 4
+      prixUnitaire: 21.75
+      totalLigne: 87
+    - designation: Visserie inox A4 réf. VX-198 (lot de 100)
+      quantite: 5
+      prixUnitaire: 23.1
+      totalLigne: 115.5
+    - designation: Visserie inox A4 réf. VX-205 (lot de 100)
+      quantite: 1
+      prixUnitaire: 24.45
+      totalLigne: 24.45
+    - designation: Visserie inox A4 réf. VX-212 (lot de 100)
+      quantite: 2
+      prixUnitaire: 25.8
+      totalLigne: 51.6
+    - designation: Visserie inox A4 réf. VX-219 (lot de 100)
+      quantite: 3
+      prixUnitaire: 27.15
+      totalLigne: 81.45
+    - designation: Visserie inox A4 réf. VX-226 (lot de 100)
+      quantite: 4
+      prixUnitaire: 28.5
+      totalLigne: 114
+    - designation: Visserie inox A4 réf. VX-233 (lot de 100)
+      quantite: 5
+      prixUnitaire: 29.85
+      totalLigne: 149.25
+    - designation: Visserie inox A4 réf. VX-240 (lot de 100)
+      quantite: 1
+      prixUnitaire: 31.2
+      totalLigne: 31.2
+    - designation: Visserie inox A4 réf. VX-247 (lot de 100)
+      quantite: 2
+      prixUnitaire: 32.55
+      totalLigne: 65.1
+    - designation: Visserie inox A4 réf. VX-254 (lot de 100)
+      quantite: 3
+      prixUnitaire: 33.9
+      totalLigne: 101.7
+    - designation: Visserie inox A4 réf. VX-261 (lot de 100)
+      quantite: 4
+      prixUnitaire: 35.25
+      totalLigne: 141
+    - designation: Visserie inox A4 réf. VX-268 (lot de 100)
+      quantite: 5
+      prixUnitaire: 36.6
+      totalLigne: 183
+    - designation: Visserie inox A4 réf. VX-275 (lot de 100)
+      quantite: 1
+      prixUnitaire: 37.95
+      totalLigne: 37.95
+    - designation: Visserie inox A4 réf. VX-282 (lot de 100)
+      quantite: 2
+      prixUnitaire: 39.3
+      totalLigne: 78.6
+    - designation: Visserie inox A4 réf. VX-289 (lot de 100)
+      quantite: 3
+      prixUnitaire: 40.65
+      totalLigne: 121.95
+    - designation: Visserie inox A4 réf. VX-296 (lot de 100)
+      quantite: 4
+      prixUnitaire: 42
+      totalLigne: 168
+    - designation: Visserie inox A4 réf. VX-303 (lot de 100)
+      quantite: 5
+      prixUnitaire: 43.35
+      totalLigne: 216.75
+    - designation: Visserie inox A4 réf. VX-310 (lot de 100)
+      quantite: 1
+      prixUnitaire: 44.7
+      totalLigne: 44.7
+    - designation: Visserie inox A4 réf. VX-317 (lot de 100)
+      quantite: 2
+      prixUnitaire: 46.05
+      totalLigne: 92.1
+    - designation: Visserie inox A4 réf. VX-324 (lot de 100)
+      quantite: 3
+      prixUnitaire: 47.4
+      totalLigne: 142.2
+    - designation: Visserie inox A4 réf. VX-331 (lot de 100)
+      quantite: 4
+      prixUnitaire: 48.75
+      totalLigne: 195
+    - designation: Visserie inox A4 réf. VX-338 (lot de 100)
+      quantite: 5
+      prixUnitaire: 50.1
+      totalLigne: 250.5
+    - designation: Visserie inox A4 réf. VX-345 (lot de 100)
+      quantite: 1
+      prixUnitaire: 51.45
+      totalLigne: 51.45
+    - designation: Visserie inox A4 réf. VX-352 (lot de 100)
+      quantite: 2
+      prixUnitaire: 52.8
+      totalLigne: 105.6
+    - designation: Visserie inox A4 réf. VX-359 (lot de 100)
+      quantite: 3
+      prixUnitaire: 54.15
+      totalLigne: 162.45
+    - designation: Visserie inox A4 réf. VX-366 (lot de 100)
+      quantite: 4
+      prixUnitaire: 55.5
+      totalLigne: 222
+    - designation: Visserie inox A4 réf. VX-373 (lot de 100)
+      quantite: 5
+      prixUnitaire: 56.85
+      totalLigne: 284.25
+  totalHT: 3771
+  tauxTVA: 20
+  montantTVA: 754.2
+  totalTTC: 4525.2
+interdits:
+  fournisseur:
+    - GARNIER Industrie
+avertissements_attendus: []
