@@ -32,3 +32,4 @@ docs/decisions.md
 # Configuration locale des outils
 .claude/
 eval/report-synthetiques.md
+eval/report-synthetiques.html

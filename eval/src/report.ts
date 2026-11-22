@@ -82,19 +82,24 @@ export function metricsSection(title: string, metrics: Metrics, generatedAt: str
   ];
 }
 
+/** Ce qui empêche de considérer le piège comme déjoué ; vide = réussi. */
+export function caseProblems(s: CaseScore): string[] {
+  const wrong = s.fields.filter((f) => f.outcome !== "juste" && f.outcome !== "abstention_correcte");
+  return [
+    ...(s.failed ? ["facture en échec"] : []),
+    ...wrong.map((f) => `${f.path} : ${f.outcome}${f.interdit ? " (faux ami)" : ""}`),
+    ...s.missingWarnings.map((w) => `${w} non signalé`),
+    ...s.unexpectedBlocking.map((w) => `fausse alerte ${w}`),
+  ];
+}
+
 /** Une ligne par facture : le piège est-il déjoué ? (tous les champs justes, écarts attendus levés, aucune fausse alerte) */
 export function trapsSection(cases: EvalCase[], scores: CaseScore[]): string[] {
   const lines = ["", "### Pièges", "", "| Facture | Piège | Résultat |", "|---|---|---|"];
   for (const c of cases) {
     const s = scores.find((x) => x.fichier === c.fichier);
     if (!s) continue;
-    const wrong = s.fields.filter((f) => f.outcome !== "juste" && f.outcome !== "abstention_correcte");
-    const problems = [
-      ...(s.failed ? ["facture en échec"] : []),
-      ...wrong.map((f) => `${f.path} : ${f.outcome}${f.interdit ? " (faux ami)" : ""}`),
-      ...s.missingWarnings.map((w) => `${w} non signalé`),
-      ...s.unexpectedBlocking.map((w) => `fausse alerte ${w}`),
-    ];
+    const problems = caseProblems(s);
     const piege = (c.description ?? "").replace(/^Synthétique : /, "");
     lines.push(`| ${c.fichier} | ${piege} | ${problems.length ? `✗ ${problems.slice(0, 3).join(" ; ")}${problems.length > 3 ? ` (+${problems.length - 3})` : ""}` : "✓"} |`);
   }

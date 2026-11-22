@@ -18,6 +18,7 @@ import { loadCases } from "../cases.ts";
 import { errorsSection, loadBatch, metricsSection, trapsSection } from "../report.ts";
 import { aggregate, scoreCase } from "../scoring.ts";
 import { SYNTH_CASES_DIR, SYNTH_PDF_DIR } from "./generate.ts";
+import { htmlReport } from "./html.ts";
 
 const OUTPUT = path.join(ROOT_DIR, "output", "synthetiques.json");
 
@@ -57,7 +58,9 @@ async function main() {
   const markdown = `${report.join("\n")}\n`;
   console.log(`\n${markdown}`);
   await writeFile(path.resolve(import.meta.dirname, "../../report-synthetiques.md"), markdown);
-  console.log("Rapport écrit dans eval/report-synthetiques.md");
+  const html = await htmlReport(cases, scores, batch, aggregate(scores), SYNTH_PDF_DIR);
+  await writeFile(path.resolve(import.meta.dirname, "../../report-synthetiques.html"), html);
+  console.log("Rapports écrits dans eval/report-synthetiques.md et eval/report-synthetiques.html (à ouvrir dans un navigateur)");
 }
 
 main().catch((error: unknown) => {
