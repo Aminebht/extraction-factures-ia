@@ -24,6 +24,7 @@ npm start                 # traite factures/ puis ouvre l'interface sur http://l
 | `npm test` | Tests automatisés (sans réseau) |
 | `npm run typecheck` | Vérification des types de tous les paquets |
 | `npm run eval` | Rapport d'évaluation (voir plus bas) |
+| `npm run eval:synthetiques` | Chaîne complète sur 12 factures synthétiques à pièges (`-- --rescorer` : renoter sans rappeler les API) |
 
 Pour traiter une autre facture : la déposer dans `factures/` et relancer `npm run pipeline`, puis rafraîchir la page.
 
@@ -98,11 +99,17 @@ factures/     Les 4 factures du sujet
 
 **Résultat mesuré** (20/11/2026, configuration de développement : OCR Gemini `gemini-3.8-flash` + LLM Mistral Small 3.1 via Cloudflare ; à refaire avec l'API Mistral) : **100/100 champs justes**, aucune valeur fausse, aucun faux ami, **2/2 écarts réels détectés** sur Studio Botanica, aucune fausse alerte, 0 facture en échec, en 2 min 16 s pour les 4 factures (concurrence 2). Sur HydroFluid, l'OCR n'a renvoyé aucun mojibake : la couche texte cachée a bien été ignorée.
 
+3. **Factures synthétiques à pièges** (`npm run eval:synthetiques`). Quatre factures ne suffisent pas à tester l'OCR et le LLM sur des documents inconnus, et il n'existe pas de jeu public de factures françaises annotées. `eval/src/synthetiques/` génère donc 12 PDF (3 mises en page) dont chacun isole un piège, avec une vérité terrain produite à partir des mêmes données : TVA à 5,5 %, total HT ou TTC faux sur le document, numéro de commande et code client près du numéro de facture, dates de livraison et d'échéance près de la date d'émission, client en en-tête, numéro absent, deux taux de TVA, remise négative, quantités décimales et séparateur « 1.234,56 », facture de 40 lignes sur deux pages. Ces factures passent dans la chaîne complète mais n'alimentent pas l'interface ; `npm run eval:generer` les régénère.
+
+   **Résultat mesuré** (22/11/2026, même configuration de développement) : **11 pièges sur 12 déjoués, aucune valeur fausse affichée comme sûre, aucun faux ami, 2/2 écarts détectés**. La facture de 40 lignes échoue proprement (« le service d'IA a mis trop de temps ») : la réponse, une citation par champ, dépasse le délai de Cloudflare (voir limites). Le premier passage a aussi révélé deux problèmes, corrigés : le LLM cite parfois des cellules d'une même ligne en sautant une colonne (« Manuel… | 64,00 »), ce que l'ancrage accepte désormais à condition que toutes les cellules soient, dans l'ordre, sur la même ligne du document ; et une erreur dans la vérité terrain elle-même (un total de TVA attendu alors qu'il n'est pas imprimé), que le pipeline avait eu raison de ne pas inventer.
+
 ## Limites connues
 
 - **Seuils empiriques** (confiance 0,80, tolérance ±1 centime), calibrés sur 4 factures seulement.
 - **L'ancrage prouve qu'une valeur n'est pas inventée, pas qu'elle est dans le bon champ** : si le LLM met le nom du client dans « fournisseur », la valeur figure bien sur la facture et passe. De même, une quantité et un prix unitaire échangés avec leurs citations laissent le produit inchangé et échappent aux contrôles.
 - **Une mauvaise lecture OCR reproduite par le LLM** passe l'ancrage ; elle n'est repérée que si elle casse l'arithmétique.
+- **Factures longues** : une citation par champ rend la réponse du LLM volumineuse. Avec le LLM Cloudflare, une facture d'une quarantaine de lignes dépasse le délai de réponse (erreur 408, facture marquée « non traitée ») ; à vérifier avec l'API Mistral. Piste : découper les lignes en plusieurs appels.
+- **Factures synthétiques** : PDF natifs et propres, ils testent le raisonnement du LLM et l'ancrage, pas l'OCR d'un scan dégradé (couvert seulement par la facture de 2009).
 - **TVA à plusieurs taux** non représentée : un seul `tauxTVA`, mis à `null` si plusieurs taux figurent.
 - **Désignations** comparées avec une tolérance (80 % des mots) ; dates à année sur 2 chiffres interprétées en 20XX ; euros uniquement.
 - **Fournisseurs de développement** (le sujet impose l'API Mistral ; l'OCR et le LLM se choisissent séparément) :
