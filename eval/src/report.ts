@@ -78,12 +78,14 @@ export function metricsSection(title: string, metrics: Metrics, generatedAt: str
     `| **Fiabilité des valeurs affichées comme sûres** (cible 100 %) | **${pct(metrics.fiabiliteDesValeursSures)}** |`,
     `| Valeurs fausses affichées comme sûres | ${metrics.fausseSilencieuse} |`,
     `| Valeurs fausses mais marquées « à vérifier » | ${metrics.fausseSignalee} |`,
+    `| Valeurs fausses mais prises dans un écart bloquant (revérifiées par le comptable) | ${metrics.fausseEcart} |`,
     `| Faux amis renvoyés (client, échéance, total recalculé…) | ${metrics.interdits} |`,
     `| Couverture (valeurs attendues correctement extraites) | ${pct(metrics.couverture)} (${metrics.juste} champs) |`,
     `| Abstentions (valeur lisible non extraite) | ${metrics.abstention} |`,
     `| Abstentions correctes (rien à lire) | ${metrics.abstentionCorrecte} |`,
     `| Écarts attendus détectés | ${metrics.avertissementsAttendus - metrics.avertissementsManques}/${metrics.avertissementsAttendus} |`,
-    `| Fausses alertes (écart bloquant sans écart réel) | ${metrics.faussesAlertes} |`,
+    `| Fausses alertes (écart bloquant sans écart réel ni valeur mal lue) | ${metrics.faussesAlertes} |`,
+    `| Alertes justifiées par une valeur mal lue | ${metrics.alertesJustifiees} |`,
     `| Factures en échec | ${metrics.facturesEnEchec} |`,
   ];
 }

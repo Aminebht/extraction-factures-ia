@@ -1,6 +1,7 @@
-import type { Field } from "@juwa/schema";
+import type { Field, InvoiceResult, Warning } from "@juwa/schema";
 import { describe, expect, it } from "vitest";
-import { classify, isForbidden, matches, presentInOcr } from "./scoring.ts";
+import type { EvalCase } from "./cases.ts";
+import { classify, fieldsInvolved, isForbidden, matches, presentInOcr, scoreCase } from "./scoring.ts";
 
 const field = <T>(value: T | null, status: Field<T>["status"] = "ok"): Field<T> => ({
   value,
@@ -42,6 +43,73 @@ describe("classify", () => {
 
   it("compte une facture en échec comme une abstention, jamais comme une valeur fausse", () => {
     expect(classify("amount", 1040, null)).toBe("abstention");
+  });
+
+  it("ne compte pas comme silencieuse une valeur fausse prise dans un écart bloquant", () => {
+    expect(classify("number", 3, field(1), true)).toBe("fausse_ecart");
+    expect(classify("number", 3, field(3), true)).toBe("juste");
+  });
+});
+
+describe("fieldsInvolved", () => {
+  const warning = (code: Warning["code"], champ: string | null): Warning => ({ code, severity: "bloquant", field: champ, message: "" });
+
+  it("met en cause tous les termes de l'égalité fausse", () => {
+    expect(fieldsInvolved(warning("ECART_LIGNE", "lignes[2].totalLigne"), 4)).toEqual([
+      "lignes[2].quantite",
+      "lignes[2].prixUnitaire",
+      "lignes[2].totalLigne",
+    ]);
+    expect(fieldsInvolved(warning("ECART_SOMME_LIGNES", "totalHT"), 2)).toEqual(["totalHT", "lignes[0].totalLigne", "lignes[1].totalLigne"]);
+    expect(fieldsInvolved(warning("ECART_TTC", "totalTTC"), 2)).toEqual(["totalHT", "montantTVA", "totalTTC"]);
+  });
+});
+
+describe("scoreCase", () => {
+  const evalCase: EvalCase = {
+    fichier: "f.pdf",
+    attendu: {
+      fournisseur: "ACME",
+      numero: "F-1",
+      date: "2026-01-02",
+      totalHT: 30,
+      tauxTVA: 20,
+      montantTVA: 6,
+      totalTTC: 36,
+      lignes: [{ designation: "Vis", quantite: 3, prixUnitaire: 10, totalLigne: 30 }],
+    },
+    interdits: {},
+    avertissements_attendus: [],
+  };
+  const result = (quantite: number, warnings: Warning[]): InvoiceResult =>
+    ({
+      status: "extracted",
+      source: { fichier: "f.pdf", sha256: "x" },
+      invoice: {
+        fournisseur: field("ACME"),
+        numero: field("F-1"),
+        date: field("2026-01-02"),
+        totalHT: field(3000),
+        tauxTVA: field(20),
+        montantTVA: field(600),
+        totalTTC: field(3600),
+        lignes: [{ designation: field("Vis"), quantite: field(quantite), prixUnitaire: field(1000), totalLigne: field(3000) }],
+      },
+      warnings,
+    }) as unknown as InvoiceResult;
+  const ecartLigne: Warning = { code: "ECART_LIGNE", severity: "bloquant", field: "lignes[0].totalLigne", message: "" };
+
+  it("une quantité mal lue qui déclenche un écart : valeur repérée et alerte justifiée", () => {
+    const s = scoreCase(evalCase, result(1, [ecartLigne]));
+    expect(s.fields.find((f) => f.path === "lignes[0].quantite")?.outcome).toBe("fausse_ecart");
+    expect(s.unexpectedBlocking).toEqual([]);
+    expect(s.justifiedBlocking).toEqual(["ECART_LIGNE"]);
+  });
+
+  it("un écart sur des valeurs toutes justes reste une fausse alerte", () => {
+    const s = scoreCase(evalCase, result(3, [ecartLigne]));
+    expect(s.unexpectedBlocking).toEqual(["ECART_LIGNE"]);
+    expect(s.justifiedBlocking).toEqual([]);
   });
 });
 

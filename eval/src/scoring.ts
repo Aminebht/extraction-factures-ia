@@ -3,9 +3,10 @@
  *
  * La métrique centrale traduit la demande du client (« un champ vide plutôt qu'une valeur fausse ») :
  * une valeur fausse affichée comme sûre (statut ok) est l'erreur la plus grave ; une valeur fausse
- * marquée « à vérifier » est rattrapée par le comptable ; une abstention ne coûte qu'une saisie.
+ * marquée « à vérifier » ou prise dans un écart bloquant est rattrapée par le comptable ; une abstention
+ * ne coûte qu'une saisie.
  */
-import type { Field, InvoiceResult, WarningCode } from "@juwa/schema";
+import type { Field, InvoiceResult, Warning, WarningCode } from "@juwa/schema";
 import { normalizeWithMap } from "@juwa/pipeline/grounding.ts";
 import { amountAppearsIn, datesIn, numberAppearsIn, toCents } from "@juwa/pipeline/parsing.ts";
 import type { EvalCase } from "./cases.ts";
@@ -16,6 +17,7 @@ export type Outcome =
   | "juste" // valeur correcte
   | "fausse_silencieuse" // valeur fausse affichée comme sûre : l'erreur à éviter
   | "fausse_signalee" // valeur fausse mais marquée « à vérifier »
+  | "fausse_ecart" // valeur fausse, mais un écart bloquant porte sur elle (ex. OCR : 1 lu au lieu de 3)
   | "abstention" // pas de valeur alors qu'elle était lisible
   | "abstention_correcte"; // pas de valeur, et il n'y en avait pas à lire
 
@@ -59,12 +61,40 @@ export function isForbidden(kind: Kind, forbidden: (string | number)[], got: str
   });
 }
 
-/** `field` est null quand la facture entière a échoué. */
-export function classify(kind: Kind, expected: Expected | null, field: Field<string | number> | null): Outcome {
+/**
+ * Champs mis en cause par un écart bloquant : tous les termes de l'égalité qui ne tombe pas juste.
+ * Le message de l'écart les cite ; le comptable les revérifie donc sur le PDF.
+ */
+export function fieldsInvolved(warning: Warning, lineCount: number): string[] {
+  const allLineTotals = Array.from({ length: lineCount }, (_, i) => `lignes[${i}].totalLigne`);
+  switch (warning.code) {
+    case "ECART_LIGNE": {
+      const line = warning.field?.match(/^lignes\[\d+\]/)?.[0];
+      return line ? [`${line}.quantite`, `${line}.prixUnitaire`, `${line}.totalLigne`] : [];
+    }
+    case "ECART_SOMME_LIGNES":
+      return ["totalHT", ...allLineTotals];
+    case "ECART_TVA":
+      return ["totalHT", "tauxTVA", "montantTVA"];
+    case "ECART_TTC":
+      return ["totalHT", "montantTVA", "totalTTC"];
+    default:
+      return warning.field ? [warning.field] : [];
+  }
+}
+
+/** `field` est null quand la facture entière a échoué ; `inBlockingCheck` : un écart bloquant porte sur ce champ. */
+export function classify(
+  kind: Kind,
+  expected: Expected | null,
+  field: Field<string | number> | null,
+  inBlockingCheck = false,
+): Outcome {
   const got = field?.value ?? null;
   if (got === null) return expected === null ? "abstention_correcte" : "abstention";
   if (expected !== null && matches(kind, expected, got)) return "juste";
-  return field?.status === "a_verifier" ? "fausse_signalee" : "fausse_silencieuse";
+  if (field?.status === "a_verifier") return "fausse_signalee";
+  return inBlockingCheck ? "fausse_ecart" : "fausse_silencieuse";
 }
 
 export interface FieldScore {
@@ -83,14 +113,20 @@ export interface CaseScore {
   fields: FieldScore[];
   expectedWarnings: WarningCode[];
   missingWarnings: WarningCode[];
-  /** Écarts bloquants levés alors que le document n'en a pas : fausses alertes. */
+  /** Écarts bloquants absents du document, alors que les valeurs en cause sont justes : fausses alertes. */
   unexpectedBlocking: WarningCode[];
+  /** Écarts bloquants absents du document, mais justifiés : ils portent sur une valeur mal lue. */
+  justifiedBlocking: WarningCode[];
 }
 
 export function scoreCase(evalCase: EvalCase, result: InvoiceResult | undefined): CaseScore {
   const invoice = result?.status === "extracted" ? result.invoice : null;
   const { attendu, interdits } = evalCase;
   const fields: FieldScore[] = [];
+  const warnings = result?.status === "extracted" ? result.warnings : [];
+  const lineCount = invoice?.lignes.length ?? 0;
+  const blocking = warnings.filter((w) => w.severity === "bloquant");
+  const inBlockingCheck = new Set(blocking.flatMap((w) => fieldsInvolved(w, lineCount)));
 
   const add = (path: string, kind: Kind, expected: Expected | null, field: Field<string | number> | null, forbiddenKey = path) => {
     const got = field?.value ?? null;
@@ -100,7 +136,7 @@ export function scoreCase(evalCase: EvalCase, result: InvoiceResult | undefined)
       kind,
       expected,
       got,
-      outcome: classify(kind, expected, field),
+      outcome: classify(kind, expected, field, inBlockingCheck.has(path)),
       interdit: got !== null && isForbidden(kind, interdits[forbiddenKey] ?? [], got),
     });
   };
@@ -124,8 +160,10 @@ export function scoreCase(evalCase: EvalCase, result: InvoiceResult | undefined)
     add(`lignes[${i}].totalLigne`, "amount", exp?.totalLigne ?? null, got?.totalLigne ?? null, "lignes.totalLigne");
   }
 
-  const warnings = result?.status === "extracted" ? result.warnings : [];
   const codes = new Set(warnings.map((w) => w.code));
+  const misread = new Set(fields.filter((f) => f.outcome === "fausse_ecart").map((f) => f.path));
+  const unexpected = blocking.filter((w) => !evalCase.avertissements_attendus.includes(w.code));
+  const justified = (w: Warning) => fieldsInvolved(w, lineCount).some((p) => misread.has(p));
   return {
     fichier: evalCase.fichier,
     failed: result?.status !== "extracted",
@@ -133,9 +171,8 @@ export function scoreCase(evalCase: EvalCase, result: InvoiceResult | undefined)
     expectedWarnings: evalCase.avertissements_attendus,
     // Une facture en échec n'a levé aucun avertissement : les attendus sont manqués.
     missingWarnings: evalCase.avertissements_attendus.filter((c) => !codes.has(c)),
-    unexpectedBlocking: warnings
-      .filter((w) => w.severity === "bloquant" && !evalCase.avertissements_attendus.includes(w.code))
-      .map((w) => w.code),
+    unexpectedBlocking: unexpected.filter((w) => !justified(w)).map((w) => w.code),
+    justifiedBlocking: unexpected.filter(justified).map((w) => w.code),
   };
 }
 
@@ -144,6 +181,7 @@ export interface Metrics {
   juste: number;
   fausseSilencieuse: number;
   fausseSignalee: number;
+  fausseEcart: number;
   abstention: number;
   abstentionCorrecte: number;
   interdits: number;
@@ -154,6 +192,7 @@ export interface Metrics {
   avertissementsAttendus: number;
   avertissementsManques: number;
   faussesAlertes: number;
+  alertesJustifiees: number;
   facturesEnEchec: number;
 }
 
@@ -173,15 +212,17 @@ export function aggregate(scores: CaseScore[]): Metrics {
     juste,
     fausseSilencieuse,
     fausseSignalee: count("fausse_signalee"),
+    fausseEcart: count("fausse_ecart"),
     abstention: count("abstention"),
     abstentionCorrecte: count("abstention_correcte"),
     interdits: all.filter((f) => f.interdit).length,
-    // Valeurs affichées comme sûres = justes + fausses silencieuses (les a_verifier sont signalées).
+    // Valeurs affichées comme sûres = justes + fausses silencieuses (« à vérifier » et écarts sont signalés).
     fiabiliteDesValeursSures: ratio(juste, juste + fausseSilencieuse),
     couverture: ratio(juste, attendues),
     avertissementsAttendus: expectedWarnings,
     avertissementsManques: missing,
     faussesAlertes: scores.reduce((n, s) => n + s.unexpectedBlocking.length, 0),
+    alertesJustifiees: scores.reduce((n, s) => n + s.justifiedBlocking.length, 0),
     facturesEnEchec: scores.filter((s) => s.failed).length,
   };
 }

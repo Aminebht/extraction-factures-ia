@@ -27,6 +27,7 @@ const OUTCOME: Record<Outcome, { label: string; tone: "ok" | "warn" | "bad" }> =
   abstention_correcte: { label: "✓ Laissé vide (rien à lire)", tone: "ok" },
   abstention: { label: "Non lu (valeur pourtant lisible)", tone: "warn" },
   fausse_signalee: { label: "Faux, mais signalé « à vérifier »", tone: "warn" },
+  fausse_ecart: { label: "Faux, mais pris dans un écart bloquant", tone: "warn" },
   fausse_silencieuse: { label: "✗ FAUX affiché comme sûr", tone: "bad" },
 };
 
