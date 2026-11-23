@@ -6,6 +6,8 @@ import path from "node:path";
 import { BatchResult } from "@juwa/schema";
 import { config } from "@juwa/pipeline/config.ts";
 import type { OcrResult } from "@juwa/pipeline/ocr.ts";
+import { ocrCacheKey } from "@juwa/pipeline/pipeline.ts";
+import { createOcrProvider } from "@juwa/pipeline/providers/index.ts";
 import type { EvalCase } from "./cases.ts";
 import type { FiletReport } from "./filet.ts";
 import { presentInOcr, type CaseScore, type FieldScore, type Metrics } from "./scoring.ts";
@@ -21,10 +23,14 @@ export async function loadBatch(file: string): Promise<BatchResult | null> {
   }
 }
 
-/** Texte OCR en cache pour ce PDF (le nom du fichier de cache commence par son sha256). */
+/**
+ * Texte OCR en cache pour ce PDF, lu par le fournisseur OCR configuré : le cache garde aussi les
+ * lectures des autres fournisseurs, qui ne sont pas celles qu'a vues le LLM.
+ */
 async function loadOcr(sha256: string): Promise<string | null> {
   try {
-    const file = (await readdir(config.ocrCacheDir)).find((f) => f.startsWith(`${sha256}.`));
+    const key = ocrCacheKey(sha256, createOcrProvider().name);
+    const file = (await readdir(config.ocrCacheDir)).find((f) => f === `${key}.json`);
     if (!file) return null;
     const ocr = JSON.parse(await readFile(path.join(config.ocrCacheDir, file), "utf8")) as OcrResult;
     return ocr.pages.map((p) => p.markdown).join("\n");
